@@ -1,0 +1,21 @@
+.build-ctas{display:flex;flex-wrap:wrap;align-items:center;gap:22px;margin-top:34px}
+.ghost-link{color:rgba(255,255,255,.8);font-size:15px;font-weight:500;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:2px}
+.ghost-link:hover{color:#fff;border-color:var(--sky)}
+.flow{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:f}
+.flow li{position:relative;padding:26px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:var(--shadow)}
+.flow-n{font-family:var(--serif);font-size:30px;line-height:1;color:var(--blue)}
+.flow h3{font-family:var(--serif);font-weight:400;font-size:26px;margin:12px 0 8px}
+.flow p{margin:0;color:var(--muted);line-height:1.7;font-size:15px}
+.tool-name{display:flex;align-items:center;gap:10px}
+.tool-name svg{color:var(--blue);flex:none}
+.tool-name code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:18px;overflow-wrap:anywhere}
+.log-sub{color:var(--muted);font-size:15px;margin-top:16px}
+.build .criteria-card ul{margin-top:0}
+.state-card{border-left-width:4px}
+.state-card code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.state-input-streaming{border-style:dashed;border-left-style:solid;border-left-color:#9cc2ff}
+.state-input-available{border-left-color:#2457a6}
+.state-output-available{border-left-color:#1f7a4d}
+.state-output-error{border-left-color:#a2352b}
+@media (max-width:960px){.flow{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.flow{grid-template-columns:1fr}.flow li{padding:22px}}

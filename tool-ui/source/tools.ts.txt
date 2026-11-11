@@ -1,0 +1,126 @@
+// Tool definitions for the Weekly Review Coach.
+// Four server-side tools (Zod input schema + execute) and one user-interaction
+// tool (no execute: the browser answers it after the user approves or edits).
+import { tool, type InferUITools, type UIMessage, type UIDataTypes } from 'ai';
+import { z } from 'zod';
+
+// COACH_PORTFOLIO_URL only exists so the site check can be tested locally against another server.
+export const PORTFOLIO = process.env.COACH_PORTFOLIO_URL || 'https://ichrak-portfolio-seven.vercel.app';
+export const PORTFOLIO_PAGES = ['/', '/playground/', '/agent-spec/', '/agent-build/'] as const;
+
+export type KnowledgeFile = { name: string; content: string };
+
+/** Which tool (if any) the "simulate a failure" switch in the UI should break. */
+export type FailSwitch = 'readFile' | 'checkPortfolio' | null;
+
+const reason = z
+  .string()
+  .max(140)
+  .describe('One short sentence telling the user why you are calling this tool now.');
+
+const fileKind = (name: string) =>
+  /^week-\d+\.md$/i.test(name) ? 'notes' : name === 'assignments.md' ? 'assignments' : name.includes('template') ? 'template' : name.startsWith('plan-') ? 'plan' : 'other';
+
+function simulated(fail: FailSwitch, name: FailSwitch) {
+  if (fail && fail === name) throw new Error('Simulated failure: the “break a tool” test switch is on.');
+}
+
+export function createCoachTools({ files, fail = null }: { files: KnowledgeFile[]; fail?: FailSwitch }) {
+  return {
+    listFiles: tool({
+      description: "List the user's knowledge files (weekly notes, assignments.md, review template, approved plans). Call this first.",
+      inputSchema: z.object({ reason }),
+      execute: async () => ({
+        files: files.map((f) => ({
+          name: f.name,
+          kind: fileKind(f.name),
+          chars: f.content.length,
+          week: Number(f.name.match(/^week-(\d+)\.md$/i)?.[1]) || null,
+        })),
+      }),
+    }),
+
+    readFile: tool({
+      description: 'Read one knowledge file in full, by its exact name from listFiles.',
+      inputSchema: z.object({
+        name: z.string().describe('Exact file name, e.g. "week-05.md".'),
+        reason,
+      }),
+      execute: async ({ name }) => {
+        simulated(fail, 'readFile');
+        const f = files.find((x) => x.name === name);
+        if (!f) throw new Error(`There is no file called “${name}”. Files you have: ${files.map((x) => x.name).join(', ') || 'none'}.`);
+        return { name: f.name, kind: fileKind(f.name), lines: f.content.split('\n').length, content: f.content };
+      },
+    }),
+
+    checkPortfolio: tool({
+      description: `Fetch the user's live portfolio (${PORTFOLIO}) and report, for each page, whether it is online, how fast it answered, and its title. Use it as evidence of what was shipped.`,
+      inputSchema: z.object({ reason }),
+      execute: async () => {
+        simulated(fail, 'checkPortfolio');
+        const pages = await Promise.all(
+          PORTFOLIO_PAGES.map(async (path) => {
+            const t0 = Date.now();
+            try {
+              const r = await fetch(PORTFOLIO + path, { signal: AbortSignal.timeout(6000) });
+              const html = await r.text();
+              return {
+                path,
+                ok: r.ok,
+                status: r.status,
+                ms: Date.now() - t0,
+                title: html.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim() ?? null,
+              };
+            } catch {
+              return { path, ok: false, status: null, ms: Date.now() - t0, title: null };
+            }
+          }),
+        );
+        if (pages.every((p) => !p.ok)) throw new Error(`None of the ${pages.length} portfolio pages answered. The site may be down, or the network blocked the request.`);
+        return { site: PORTFOLIO, checkedAt: new Date().toISOString(), pages };
+      },
+    }),
+
+    showWeeklyReview: tool({
+      description:
+        'Show the weekly review as a card. Call it once, after reading the files. Only include items you found in the files; every finished item must name the file it came from.',
+      inputSchema: z.object({
+        week: z.number().int().min(1).max(52).describe('Internship week being reviewed.'),
+        finished: z
+          .array(z.object({ item: z.string().max(120), source: z.string().describe('File name the item came from.') }))
+          .max(8)
+          .describe('What the user finished this week.'),
+        learned: z.array(z.string().max(160)).length(3).describe('Exactly three plain-language learnings.'),
+        open: z
+          .array(z.object({ title: z.string().max(100), due: z.string().max(20).describe('Due week, e.g. "Week 6".') }))
+          .max(8)
+          .describe('What is still open, from assignments.md.'),
+        conflict: z.string().max(200).optional().describe('Only if notes and assignments.md disagree: describe the conflict.'),
+      }),
+      // Real check, not an echo: confirm every cited source is one of the user's files.
+      execute: async (review) => {
+        const names = new Set(files.map((f) => f.name));
+        const finished = review.finished.map((f) => ({ ...f, verified: names.has(f.source) }));
+        return { ...review, finished, unverified: finished.filter((f) => !f.verified).length };
+      },
+    }),
+
+    proposePlan: tool({
+      description:
+        'Propose next week’s plan (max 5 items) for the user to approve. Call it after the quiz. The user approves or asks for changes in the UI; nothing is saved until they approve.',
+      inputSchema: z.object({
+        week: z.number().int().min(1).max(52).describe('The week the plan is for.'),
+        items: z
+          .array(z.object({ task: z.string().max(100), why: z.string().max(120).optional().describe('Optional short reason.') }))
+          .min(1)
+          .max(5),
+      }),
+      outputSchema: z.object({ approved: z.boolean(), savedAs: z.string().optional(), feedback: z.string().optional() }),
+      // no execute: answered in the browser after the user's decision
+    }),
+  };
+}
+
+export type CoachTools = InferUITools<ReturnType<typeof createCoachTools>>;
+export type CoachMessage = UIMessage<never, UIDataTypes, CoachTools>;

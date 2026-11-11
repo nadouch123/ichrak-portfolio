@@ -1,0 +1,40 @@
+:root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #f6f7fb; color: #17181c; }
+button { font: inherit; }
+.playground-page { max-width: 1120px; margin: 0 auto; padding: 56px 24px 80px; }
+.playground-header { max-width: 760px; margin-bottom: 34px; }
+.playground-header h1 { margin: 4px 0 12px; font-size: clamp(34px, 6vw, 58px); line-height: 1; letter-spacing: -0.04em; }
+.playground-header p:last-child { margin: 0; color: #5e6470; line-height: 1.65; }
+.play-eyebrow { margin: 0 0 8px; color: #5c49c9; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.playground-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.play-card { padding: 26px; background: #fff; border: 1px solid #e5e7ee; border-radius: 22px; box-shadow: 0 12px 32px rgba(20, 25, 45, .06); }
+.play-card-wide { grid-column: span 2; }
+.play-number { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #efedff; color: #5c49c9; font-size: 13px; font-weight: 800; }
+.play-card h2 { margin: 15px 0 8px; font-size: 28px; letter-spacing: -.03em; }
+.play-card p { color: #626873; line-height: 1.6; }
+.play-primary,.play-secondary,.play-icon-button,.play-tab,.play-disclosure-button { border: 0; cursor: pointer; }
+.play-primary { padding: 11px 16px; border-radius: 12px; background: #18191e; color: white; font-weight: 700; }
+.play-secondary { padding: 11px 16px; border-radius: 12px; background: #edf0f5; color: #1b1d23; font-weight: 700; }
+.play-primary:focus-visible,.play-secondary:focus-visible,.play-icon-button:focus-visible,.play-tab:focus-visible,.play-disclosure-button:focus-visible,.play-tabpanel:focus-visible { outline: 3px solid #8d7cf0; outline-offset: 3px; }
+.play-tabs { margin-top: 16px; }
+.play-tablist { display: flex; gap: 4px; padding: 5px; background: #f0f2f6; border-radius: 14px; }
+.play-tab { flex: 0 0 auto; padding: 10px 15px; border-radius: 10px; background: transparent; color: #646a74; font-weight: 700; }
+.play-tab.is-selected { background: white; color: #15171b; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.play-tabpanel { margin-top: 10px; padding: 16px; border: 1px solid #e6e8ee; border-radius: 14px; line-height: 1.6; color: #4f5560; }
+.play-disclosure { margin-top: 18px; border: 1px solid #e6e8ee; border-radius: 16px; overflow: hidden; }
+.play-disclosure-button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 17px 18px; background: #fff; text-align: left; font-weight: 750; }
+.play-chevron { display: inline-block; font-size: 28px; line-height: 1; transform: rotate(0deg); transition: transform .15s ease; }
+.play-chevron.is-open { transform: rotate(90deg); }
+.play-disclosure-panel { padding: 0 18px 18px; color: #555b66; line-height: 1.6; }
+.playground-notice { margin-top: 18px; padding: 22px 24px; border: 1px dashed #c9cdd7; border-radius: 18px; background: #fbfbfd; }
+.playground-notice h2 { margin-top: 0; }
+kbd { padding: 2px 6px; border: 1px solid #d8dbe3; border-bottom-width: 2px; border-radius: 6px; background: white; font-size: .85em; }
+.play-modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(15, 17, 23, .62); z-index: 1000; }
+.play-modal { width: min(560px, 100%); max-height: calc(100vh - 48px); overflow: auto; padding: 24px; background: white; border-radius: 22px; box-shadow: 0 30px 90px rgba(0,0,0,.28); }
+.play-modal-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.play-modal h2 { margin: 0; font-size: 30px; letter-spacing: -.03em; }
+.play-description { color: #5f6570; line-height: 1.6; }
+.play-icon-button { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 11px; background: #f0f2f5; font-size: 26px; line-height: 1; }
+.play-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+@media (max-width: 760px) { .playground-grid { grid-template-columns: 1fr; } .play-card-wide { grid-column: auto; } }
