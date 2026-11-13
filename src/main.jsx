@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert } from 'lucide-react';
+import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
+import { LINKS, bookingHref } from './links.js';
 import './index.css';
 
-const NAV = ['about', 'skills', 'work', 'experience', 'contact'];
+const NAV = ['about', 'work', 'writing', 'experience', 'contact'];
+
+const profileLinks = [
+  { label: 'LinkedIn', href: LINKS.linkedin, icon: Linkedin, external: true },
+  { label: 'GitHub', href: LINKS.github, icon: Github, external: true },
+  { label: 'CV', href: LINKS.cv, icon: FileText },
+  { label: 'Book a call', href: bookingHref, icon: CalendarDays, external: !!LINKS.booking },
+].filter(l => l.href);
+
+const posts = [
+  { kind: 'Build log', title: 'What broke while building my first agent', desc: 'The Weekly Review Coach build log: what broke, what changed, what I cut.', href: '/agent-build/', date: 'Nov 2026' },
+  { kind: 'Write-up', title: 'I sabotaged my own agent ten ways', desc: 'Designing an honest state for every failure, from a dropped network to a crashed tool.', href: '/edge-cases/', date: 'Nov 2026' },
+  { kind: 'Coming next', title: 'DNS, explained for my team', desc: 'What really happens between typing an address and a site answering.', date: 'Soon' },
+];
 
 const projects = [
   { title: 'Error states, empty states, edge cases', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-08', desc: 'I sabotaged my Weekly Review Coach ten ways (network, mid-stream cut, 429, malformed tool data, crashes) and gave every failure a designed state with a safe retry. Plus designed empty states, skeletons, a mobile Safari pass, and an automated test of the mid-stream failure.', tech: ['AI SDK', 'Error boundaries', 'Playwright'], href: '/edge-cases/', cta: 'See the sabotage checklist', icon: ShieldAlert, featured: true },
@@ -82,11 +96,16 @@ function App() {
             <div className="hero-copy reveal">
               <p className="eyebrow light"><span className="dot" /> AI &amp; Software Engineering</p>
               <h1>Building digital experiences with <em>AI.</em></h1>
-              <p className="hero-lead">I'm Ichrak Matrouh, a computer science engineering student focused on software engineering, artificial intelligence, and practical digital products.</p>
+              <p className="hero-lead">I'm Ichrak Matrouh, a computer science engineering student and frontend AI engineering intern at FlyRank. I build AI products people can trust: interfaces that show what the AI is doing, handle failure honestly, and stay usable for everyone.</p>
               <div className="hero-actions">
                 <a className="btn btn-light" href="#work">View my work <ArrowUpRight size={17} /></a>
                 <a className="btn btn-outline" href="#contact">Let's connect</a>
               </div>
+              <ul className="profile-links" aria-label="Profiles">
+                {profileLinks.map(({ label, href, icon: Icon, external }) => (
+                  <li key={label}><a href={href} {...(external ? { target: '_blank', rel: 'me noreferrer' } : {})}><Icon size={16} /> {label}</a></li>
+                ))}
+              </ul>
             </div>
             <aside className="now-card reveal" aria-label="Current status" style={{ '--d': '120ms' }}>
               <p className="now-label">Currently</p>
@@ -170,10 +189,41 @@ function App() {
           </div>
         </section>
 
-        <section id="experience" className="section tinted">
+        <section id="writing" className="section tinted">
+          <div className="wrap">
+            <div className="section-head reveal">
+              <div><p className="eyebrow">04 — Writing &amp; capstone</p><h2>Notes from <em>the build.</em></h2></div>
+              <p className="section-note">Short posts about what I'm building and learning, and the home of my FlyRank capstone.</p>
+            </div>
+            <div className="writing-grid">
+              <a className="capstone reveal" href="/agent-build/">
+                <span className="capstone-badge"><Flag size={14} /> Capstone · in progress</span>
+                <h3>Weekly Review Coach</h3>
+                <p>A Claude agent that reads my weekly notes through tools, reviews my week, and quizzes me. Spec, live build, tool UI and failure states are done; the final capstone lands here, with the FlyRank completion badge once it's approved.</p>
+                <span className="card-cta">Follow the build <ArrowUpRight size={16} /></span>
+              </a>
+              <ol className="posts">
+                {posts.map((p, i) => {
+                  const Tag = p.href ? 'a' : 'div';
+                  return (
+                    <li key={p.title} className="reveal" style={{ '--d': `${i * 80}ms` }}>
+                      <Tag className={'post' + (p.href ? ' linked' : ' soon')} {...(p.href ? { href: p.href } : {})}>
+                        <span className="post-meta"><PenLine size={13} /> {p.kind} · {p.date}</span>
+                        <span className="post-title">{p.title}</span>
+                        <span className="post-desc">{p.desc}</span>
+                      </Tag>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" className="section">
           <div className="wrap split">
             <div className="reveal">
-              <p className="eyebrow">04 — Experience</p>
+              <p className="eyebrow">05 — Experience</p>
               <h2>Learning through <em>real work.</em></h2>
             </div>
             <ol className="timeline">
@@ -192,16 +242,18 @@ function App() {
         <section id="contact" className="contact">
           <div className="wrap contact-grid">
             <div className="reveal">
-              <p className="eyebrow light">05 — Contact</p>
+              <p className="eyebrow light">06 — Contact</p>
               <h2>Have an idea?<br /><em>Let's build it.</em></h2>
               <p className="hero-lead">I'm open to internships, remote opportunities, collaborations, and AI/software projects.</p>
             </div>
             <div className="contact-card reveal" style={{ '--d': '100ms' }}>
-              <a className="mail" href="mailto:matrouhichrak7@gmail.com"><Mail size={18} /> <span>matrouhichrak7@gmail.com</span> <ArrowUpRight size={16} /></a>
+              <a className="mail" href={`mailto:${LINKS.email}`}><Mail size={18} /> <span>{LINKS.email}</span> <ArrowUpRight size={16} /></a>
+              <a className="mail" href={bookingHref} {...(LINKS.booking ? { target: '_blank', rel: 'noreferrer' } : {})}><CalendarDays size={18} /> <span>Book a 20-minute call</span> <ArrowUpRight size={16} /></a>
+              <a className="mail" href={LINKS.cv}><FileText size={18} /> <span>View my CV</span> <ArrowUpRight size={16} /></a>
               <p><MapPin size={18} /> Sousse, Tunisia</p>
               <div className="socials">
-                <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={18} /></a>
-                <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>
+                <a href={LINKS.github} target="_blank" rel="me noreferrer" aria-label="GitHub"><Github size={18} /></a>
+                {LINKS.linkedin && <a href={LINKS.linkedin} target="_blank" rel="me noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>}
               </div>
             </div>
           </div>

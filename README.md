@@ -94,3 +94,17 @@ Run `npm run dev` and open `http://localhost:5173/agent-spec/` to view it locall
 ## Week 5 redesign
 
 The whole site was redesigned for a more premium, editorial look: dark navy hero and contact sections, Instrument Serif + Inter typography, a sticky glass navigation with active-section highlighting, scroll reveal animations (switched off for users who prefer reduced motion), grouped skills, linked project cards for the FlyRank assignments (FE-05 playground, FL-06 agent spec), and a matching layout for the `/agent-spec/` page. Fonts are preconnected, and the logo was compressed from 277 KB to 9 KB for faster loading.
+
+## PF-04 — Personal website live
+
+Live URL: **https://ichrak-matrouh.vercel.app** (HTTPS, Vercel free Hobby tier). The older `ichrak-portfolio-seven.vercel.app` still works.
+
+How it is hosted: this GitHub repo is linked to a Vercel project. Every push to `main` builds the site (`vite build`) and publishes the `dist/` folder to production with an automatic HTTPS certificate.
+
+What each deployed file does:
+- `index.html` + `src/main.jsx` + `src/index.css`: the home page (positioning, work, writing & capstone, experience, contact).
+- `src/links.js`: the single place for LinkedIn, GitHub, CV, booking and email links.
+- `cv/index.html` + `cv/cv.css`: my CV as a web page; "Save as PDF" uses the browser's print dialog and a print stylesheet.
+- `playground/`, `agent-spec/`, `agent-build/`, `tool-ui/`, `edge-cases/`: one folder per FlyRank assignment page, each its own HTML entry.
+- `vite.config.ts`: tells Vite which HTML pages to build. `public/logo.jfif`: favicon and logo.
+- `package.json` / `package-lock.json`: dependencies (React, lucide-react icons, Radix for the FE-05 comparison) and build scripts.
