@@ -95,6 +95,28 @@ Run `npm run dev` and open `http://localhost:5173/agent-spec/` to view it locall
 
 The whole site was redesigned for a more premium, editorial look: dark navy hero and contact sections, Instrument Serif + Inter typography, a sticky glass navigation with active-section highlighting, scroll reveal animations (switched off for users who prefer reduced motion), grouped skills, linked project cards for the FlyRank assignments (FE-05 playground, FL-06 agent spec), and a matching layout for the `/agent-spec/` page. Fonts are preconnected, and the logo was compressed from 277 KB to 9 KB for faster loading.
 
+## Week 8 — Make It Do Something: working contact form
+
+The one dynamic feature is the contact form in the Contact section. It is wired end to end on free tiers:
+
+```
+Browser form  ->  POST /api/contact (Vercel serverless function, api/contact.js)  ->  Resend email API  ->  my inbox
+```
+
+- `src/ContactForm.jsx` collects name, email and message, shows sending / sent / error states, and keeps the message if anything fails.
+- `api/contact.js` runs on the server. It checks the fields again (never trust the browser), drops bots through a hidden "company" field, and sends the email with `reply_to` set to the visitor so I can just hit reply.
+- The Resend key lives only in Vercel environment variables, so it never reaches the browser.
+
+Setup (Vercel > ichrak-portfolio > Settings > Environment Variables, then redeploy):
+
+| Variable | Required | What it is |
+| --- | --- | --- |
+| `RESEND_API_KEY` | yes | API key from resend.com (free tier: 3,000 emails a month) |
+| `CONTACT_TO_EMAIL` | no | Where messages go. Defaults to matrouhichrak7@gmail.com |
+| `CONTACT_FROM` | no | Sender. Defaults to `onboarding@resend.dev`, which only delivers to the email the Resend account was created with |
+
+Without the key, the form answers "not switched on yet" and points visitors to my email.
+
 ## PF-04 — Personal website live
 
 Live URL: **https://ichrak-matrouh.vercel.app** (HTTPS, Vercel free Hobby tier). The older `ichrak-portfolio-seven.vercel.app` still works.
@@ -104,6 +126,7 @@ How it is hosted: this GitHub repo is linked to a Vercel project. Every push to 
 What each deployed file does:
 - `index.html` + `src/main.jsx` + `src/index.css`: the home page (positioning, work, writing & capstone, experience, contact).
 - `src/links.js`: the single place for LinkedIn, GitHub, CV, booking and email links.
+- `src/ContactForm.jsx` + `api/contact.js`: the contact form and the serverless function that emails me (see the Week 8 section above).
 - `cv/index.html` + `cv/cv.css`: my CV as a web page; "Save as PDF" uses the browser's print dialog and a print stylesheet.
 - `playground/`, `agent-spec/`, `agent-build/`, `tool-ui/`, `edge-cases/`: one folder per FlyRank assignment page, each its own HTML entry.
 - `vite.config.ts`: tells Vite which HTML pages to build. `public/logo.jfif`: favicon and logo.

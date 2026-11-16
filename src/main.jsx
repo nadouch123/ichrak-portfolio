@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
 import { LINKS, bookingHref } from './links.js';
+import ContactForm from './ContactForm.jsx';
 import './index.css';
 
 const NAV = ['about', 'work', 'writing', 'experience', 'contact'];
@@ -83,7 +84,7 @@ function App() {
           </a>
           <nav id="site-nav" className={open ? 'nav-links open' : 'nav-links'} aria-label="Main">
             {NAV.map(id => <a key={id} href={'#' + id} className={active === id ? 'active' : ''} onClick={() => setOpen(false)}>{id[0].toUpperCase() + id.slice(1)}</a>)}
-            <a className="nav-cta" href="mailto:matrouhichrak7@gmail.com" onClick={() => setOpen(false)}>Get in touch</a>
+            <a className="nav-cta" href="#contact" onClick={() => setOpen(false)}>Get in touch</a>
           </nav>
           <button className="menu" onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="site-nav">{open ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
@@ -245,16 +246,19 @@ function App() {
               <p className="eyebrow light">06 — Contact</p>
               <h2>Have an idea?<br /><em>Let's build it.</em></h2>
               <p className="hero-lead">I'm open to internships, remote opportunities, collaborations, and AI/software projects.</p>
-            </div>
-            <div className="contact-card reveal" style={{ '--d': '100ms' }}>
-              <a className="mail" href={`mailto:${LINKS.email}`}><Mail size={18} /> <span>{LINKS.email}</span> <ArrowUpRight size={16} /></a>
-              <a className="mail" href={bookingHref} {...(LINKS.booking ? { target: '_blank', rel: 'noreferrer' } : {})}><CalendarDays size={18} /> <span>Book a 20-minute call</span> <ArrowUpRight size={16} /></a>
-              <a className="mail" href={LINKS.cv}><FileText size={18} /> <span>View my CV</span> <ArrowUpRight size={16} /></a>
-              <p><MapPin size={18} /> Sousse, Tunisia</p>
-              <div className="socials">
-                <a href={LINKS.github} target="_blank" rel="me noreferrer" aria-label="GitHub"><Github size={18} /></a>
-                {LINKS.linkedin && <a href={LINKS.linkedin} target="_blank" rel="me noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>}
+              <div className="contact-side">
+                <a className="mail" href={`mailto:${LINKS.email}`}><Mail size={18} /> <span>{LINKS.email}</span> <ArrowUpRight size={16} /></a>
+                <a className="mail" href={bookingHref} {...(LINKS.booking ? { target: '_blank', rel: 'noreferrer' } : {})}><CalendarDays size={18} /> <span>Book a 20-minute call</span> <ArrowUpRight size={16} /></a>
+                <a className="mail" href={LINKS.cv}><FileText size={18} /> <span>View my CV</span> <ArrowUpRight size={16} /></a>
+                <p><MapPin size={18} /> Sousse, Tunisia</p>
+                <div className="socials">
+                  <a href={LINKS.github} target="_blank" rel="me noreferrer" aria-label="GitHub"><Github size={18} /></a>
+                  {LINKS.linkedin && <a href={LINKS.linkedin} target="_blank" rel="me noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>}
+                </div>
               </div>
+            </div>
+            <div className="reveal" style={{ '--d': '100ms' }}>
+              <ContactForm fallbackEmail={LINKS.email} />
             </div>
           </div>
           <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>AI · Software · Technology</span></footer>
