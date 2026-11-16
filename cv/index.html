@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CV of Ichrak Matrouh: computer science engineering student and frontend AI engineering intern." />
+    <meta name="theme-color" content="#0b1424" />
+    <link rel="icon" href="/logo.jfif" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="/cv/cv.css" />
+    <title>CV | Ichrak Matrouh</title>
+  </head>
+  <body>
+    <nav class="bar" aria-label="CV actions">
+      <a href="/">&larr; Back to the site</a>
+      <button type="button" onclick="window.print()">Save as PDF</button>
+    </nav>
+
+    <main class="sheet">
+      <header>
+        <h1>Ichrak Matrouh</h1>
+        <p class="role">Computer science engineering student · Frontend AI engineering</p>
+        <p class="contact">
+          Sousse, Tunisia ·
+          <a href="mailto:matrouhichrak7@gmail.com">matrouhichrak7@gmail.com</a> ·
+          <a href="https://ichrak-matrouh.vercel.app">ichrak-matrouh.vercel.app</a> ·
+          <a href="https://github.com/nadouch123">github.com/nadouch123</a>
+        </p>
+      </header>
+
+      <section>
+        <h2>Profile</h2>
+        <p>I build AI products people can trust: interfaces that show what the AI is doing, handle failure honestly, and stay usable for everyone. I combine software engineering fundamentals with AI, and I use AI as a development partner, not a replacement for engineering judgment.</p>
+      </section>
+
+      <section>
+        <h2>Experience</h2>
+        <div class="item">
+          <div class="item-head"><h3>Frontend AI Engineering Intern · FlyRank</h3><span>2026 – Present</span></div>
+          <ul>
+            <li>Designed and built the Weekly Review Coach, a Claude agent that reads my notes through tools, reviews my week and quizzes me (spec, live build, tool UI, failure states).</li>
+            <li>Rendered AI tool calls as real interface components with the AI SDK and Zod-typed tools, including a plan that waits for approval.</li>
+            <li>Gave every failure a designed state (network loss, mid-stream cut, rate limits, malformed data, crashes) with safe retry and an automated test.</li>
+            <li>Built accessible modal, tabs and disclosure components to WAI-ARIA patterns in React and TypeScript.</li>
+          </ul>
+        </div>
+        <div class="item">
+          <div class="item-head"><h3>Full-Stack Web Development Intern · IEC Telecom</h3><span>2025</span></div>
+          <ul>
+            <li>Built a task-management app with a Laravel backend and a React frontend (Vite, Tailwind, Redux Toolkit), JWT authentication and Docker.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <div class="item">
+          <div class="item-head"><h3>Engineering Degree in Computer Science · EPI Digital School</h3><span>2024 – Present</span></div>
+          <p>Software engineering, cybersecurity, artificial intelligence and distributed systems.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Projects</h2>
+        <ul>
+          <li><b>UtopiaHire</b>: AI-oriented job platform concept (Angular, TypeScript).</li>
+          <li><b>Smart Bracelet</b>: IoT architecture with device management, telemetry and analytics (ESP32, MQTT, APIs).</li>
+          <li><b>This portfolio</b>: multi-page React and Vite site, deployed on Vercel from GitHub.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Skills</h2>
+        <p><b>Frontend:</b> React, JavaScript, TypeScript, Angular · <b>Backend &amp; data:</b> Laravel, PHP, Python, MySQL, MongoDB, REST APIs · <b>AI &amp; delivery:</b> Claude API, AI SDK, tool use, evals, Docker, Vercel</p>
+      </section>
+    </main>
+  </body>
+</html>
