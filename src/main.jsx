@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert } from 'lucide-react';
+import ContactForm from './ContactForm.jsx';
 import './index.css';
 
 const NAV = ['about', 'skills', 'work', 'experience', 'contact'];
@@ -69,7 +70,7 @@ function App() {
           </a>
           <nav id="site-nav" className={open ? 'nav-links open' : 'nav-links'} aria-label="Main">
             {NAV.map(id => <a key={id} href={'#' + id} className={active === id ? 'active' : ''} onClick={() => setOpen(false)}>{id[0].toUpperCase() + id.slice(1)}</a>)}
-            <a className="nav-cta" href="mailto:matrouhichrak7@gmail.com" onClick={() => setOpen(false)}>Get in touch</a>
+            <a className="nav-cta" href="#contact" onClick={() => setOpen(false)}>Get in touch</a>
           </nav>
           <button className="menu" onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="site-nav">{open ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
@@ -195,14 +196,17 @@ function App() {
               <p className="eyebrow light">05 — Contact</p>
               <h2>Have an idea?<br /><em>Let's build it.</em></h2>
               <p className="hero-lead">I'm open to internships, remote opportunities, collaborations, and AI/software projects.</p>
-            </div>
-            <div className="contact-card reveal" style={{ '--d': '100ms' }}>
-              <a className="mail" href="mailto:matrouhichrak7@gmail.com"><Mail size={18} /> <span>matrouhichrak7@gmail.com</span> <ArrowUpRight size={16} /></a>
-              <p><MapPin size={18} /> Sousse, Tunisia</p>
-              <div className="socials">
-                <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={18} /></a>
-                <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>
+              <div className="contact-side">
+                <a className="mail" href="mailto:matrouhichrak7@gmail.com"><Mail size={18} /> <span>matrouhichrak7@gmail.com</span> <ArrowUpRight size={16} /></a>
+                <p><MapPin size={18} /> Sousse, Tunisia</p>
+                <div className="socials">
+                  <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={18} /></a>
+                  <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>
+                </div>
               </div>
+            </div>
+            <div className="reveal" style={{ '--d': '100ms' }}>
+              <ContactForm fallbackEmail="matrouhichrak7@gmail.com" />
             </div>
           </div>
           <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>AI · Software · Technology</span></footer>

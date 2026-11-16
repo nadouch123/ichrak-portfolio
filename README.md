@@ -94,3 +94,25 @@ Run `npm run dev` and open `http://localhost:5173/agent-spec/` to view it locall
 ## Week 5 redesign
 
 The whole site was redesigned for a more premium, editorial look: dark navy hero and contact sections, Instrument Serif + Inter typography, a sticky glass navigation with active-section highlighting, scroll reveal animations (switched off for users who prefer reduced motion), grouped skills, linked project cards for the FlyRank assignments (FE-05 playground, FL-06 agent spec), and a matching layout for the `/agent-spec/` page. Fonts are preconnected, and the logo was compressed from 277 KB to 9 KB for faster loading.
+
+## Week 8 — Make It Do Something: working contact form
+
+The one dynamic feature is the contact form in the Contact section. It is wired end to end on free tiers:
+
+```
+Browser form  ->  POST /api/contact (Vercel serverless function, api/contact.js)  ->  Resend email API  ->  my inbox
+```
+
+- `src/ContactForm.jsx` collects name, email and message, shows sending / sent / error states, and keeps the message if anything fails.
+- `api/contact.js` runs on the server. It checks the fields again (never trust the browser), drops bots through a hidden "company" field, and sends the email with `reply_to` set to the visitor so I can just hit reply.
+- The Resend key lives only in Vercel environment variables, so it never reaches the browser.
+
+Setup (Vercel > ichrak-portfolio > Settings > Environment Variables, then redeploy):
+
+| Variable | Required | What it is |
+| --- | --- | --- |
+| `RESEND_API_KEY` | yes | API key from resend.com (free tier: 3,000 emails a month) |
+| `CONTACT_TO_EMAIL` | no | Where messages go. Defaults to matrouhichrak7@gmail.com |
+| `CONTACT_FROM` | no | Sender. Defaults to `onboarding@resend.dev`, which only delivers to the email the Resend account was created with |
+
+Without the key, the form answers "not switched on yet" and points visitors to my email.
