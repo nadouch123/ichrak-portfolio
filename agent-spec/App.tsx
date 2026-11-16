@@ -65,7 +65,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo.jfif" alt="" width="40" height="40" />
+            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -156,10 +156,10 @@ export default function App() {
         <section id="evals" className="block">
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">05 — Eval cases</p><h2>Defined before <em>building.</em></h2></div><span className="head-icon"><FlaskConical size={24} /></span></div>
-            <div className="table-wrap">
+            <div className="table-wrap" role="region" aria-label="Eval cases table" tabIndex={0}>
               <table>
                 <thead><tr><th scope="col">#</th><th scope="col">Input / setup</th><th scope="col">Expected behaviour</th><th scope="col">Pass if</th></tr></thead>
-                <tbody>{evals.map((e, i) => <tr key={i}><td>{String(i + 1).padStart(2, '0')}</td><td>{e.input}</td><td>{e.expected}</td><td>{e.pass}</td></tr>)}</tbody>
+                <tbody>{evals.map((e, i) => <tr key={i}><td data-label="#">{String(i + 1).padStart(2, '0')}</td><td data-label="Input / setup">{e.input}</td><td data-label="Expected behaviour">{e.expected}</td><td data-label="Pass if">{e.pass}</td></tr>)}</tbody>
               </table>
             </div>
             <p className="note">All six run after the first build and again after every change to the instructions. Target: 6/6 before I call it done.</p>
