@@ -65,7 +65,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo.jfif" alt="" width="40" height="40" />
+            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -110,10 +110,10 @@ export default function App() {
         <section id="sabotage" className="block tinted">
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">02 — Sabotage checklist</p><h2>Ten ways <em>to break it.</em></h2></div><span className="head-icon"><ShieldAlert size={24} /></span></div>
-            <div className="table-wrap">
+            <div className="table-wrap" role="region" aria-label="Sabotage checklist table" tabIndex={0}>
               <table className="contract">
                 <thead><tr><th scope="col">#</th><th scope="col">Sabotage</th><th scope="col">What you see</th><th scope="col">Recovery</th></tr></thead>
-                <tbody>{sabotage.map(([what, see, fix], i) => <tr key={what}><td><span className="sab-num">{i + 1}</span></td><td>{what}</td><td>{see}</td><td>{fix}</td></tr>)}</tbody>
+                <tbody>{sabotage.map(([what, see, fix], i) => <tr key={what}><td data-label="#"><span className="sab-num">{i + 1}</span></td><td data-label="Sabotage">{what}</td><td data-label="What you see">{see}</td><td data-label="Recovery">{fix}</td></tr>)}</tbody>
               </table>
             </div>
             <p className="note">To try it: open the app, pick a switch under “Sabotage” in the header, then press Start my weekly review. Each switch breaks one request and then turns itself off.</p>
@@ -162,11 +162,11 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">07 — Failure code and README</p><h2><em>lib/failures.ts</em></h2></div><span className="head-icon"><FileCode2 size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>lib/failures.ts</code><span>Problem codes + sabotage middleware</span></div>
+              <div className="code-head"><code>lib/failures.ts</code><span>Problem codes + sabotage middleware</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/failures.ts.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
               <pre tabIndex={0} aria-label="lib/failures.ts source">{failuresSrc}</pre>
             </div>
             <div className="code-card" style={{ marginTop: 24 }}>
-              <div className="code-head"><code>README.md</code><span><BookOpen size={14} /> FE-08 section</span></div>
+              <div className="code-head"><code>README.md</code><span><BookOpen size={14} /> FE-08 section</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/README-fe08.md.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
               <pre tabIndex={0} aria-label="README FE-08 section">{readmeSrc}</pre>
             </div>
           </div>

@@ -7,3 +7,6 @@
 .contract td code,.contract th code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
 .req-list{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
 @media (max-width:720px){.req-list{grid-template-columns:1fr}.code-card pre{font-size:12px;padding:16px}}
+
+/* Week 7: bigger tap area for the GitHub links */
+.code-head a{display:inline-flex;align-items:center;min-height:32px;padding:0 4px}

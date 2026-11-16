@@ -14,6 +14,7 @@ export default function App() {
   return (
     <main className="playground-page">
       <header className="playground-header">
+        <a className="play-back" href="/#work">&larr; Back to portfolio</a>
         <p className="play-eyebrow">FE-05 · Accessibility drill</p>
         <h1>Accessible component playground</h1>
         <p>Three hand-built React + TypeScript widgets aligned to WAI-ARIA Authoring Practices, followed by a shadcn/ui source comparison.</p>

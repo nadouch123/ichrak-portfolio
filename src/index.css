@@ -209,3 +209,29 @@ h2{font-size:clamp(38px,5vw,62px);line-height:1.02}
   .scroll-cue{display:none}
   .footer{flex-direction:column}
 }
+
+/* Week 7, "Open It on Your Phone": mobile, readability and accessibility fixes */
+/* Card numbers were #b6b2a6 on white (2.1:1). Now 4.9:1. */
+.card-num{color:#767165}
+/* Form field borders were 1.4:1 on navy; inputs need 3:1 to be seen. */
+.contact-form input,.contact-form textarea{border-color:rgba(255,255,255,.4)}
+.contact-form label{color:rgba(255,255,255,.85)}
+/* Stop iOS from zooming the page in when a field gets focus (it zooms below 16px). */
+@media (max-width:820px){.contact-form input,.contact-form textarea{font-size:16px}}
+/* Larger, steadier text on phones */
+.tech li{font-size:12.5px}
+@media (max-width:560px){
+  .card-desc,.timeline p:last-child,.section-note{font-size:16px}
+  .hero h1{font-size:clamp(44px,13vw,56px)}
+  h2{font-size:clamp(34px,10vw,44px)}
+  .card h3{font-size:28px}
+  .facts span{font-size:12.5px;line-height:1.35}
+  .contact-form{padding:22px}
+}
+@media (max-width:820px){
+  /* The closed menu was invisible but its 6 links were still in the tab order and read by screen readers. */
+  .nav-links{visibility:hidden;transition:opacity .25s,transform .25s,visibility 0s .25s}
+  .nav-links.open{visibility:visible;transition:opacity .25s,transform .25s,visibility 0s}
+}
+/* Smallest phones (320px wide) */
+@media (max-width:360px){.hero h1{font-size:40px}.btn{padding:0 18px}}

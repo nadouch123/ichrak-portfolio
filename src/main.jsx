@@ -12,7 +12,7 @@ const projects = [
   { title: 'Weekly Review Coach (live agent)', tag: 'AI Agent · Build', meta: 'FlyRank · Checkpoint 1', desc: 'The working version of my FL-06 agent: a Claude agent on Vercel that reads my notes through tools, checks my live portfolio, reviews my week and quizzes me. With the full build log: what broke, what changed, what I cut.', tech: ['Claude API', 'Tool use', 'Vercel'], href: '/agent-build/', cta: 'See the build and try it', icon: Cpu },
   { title: 'Weekly Review Coach (spec)', tag: 'AI Agent Design', meta: 'FlyRank · FL-06', desc: "Design spec for my personal AI agent: a Claude Project that reviews my internship week from my own notes, quizzes me, and drafts next week's plan. Covers the access plan, six eval cases, guardrails and platform choice.", tech: ['Claude Project', 'Evals', 'Guardrails'], href: '/agent-spec/', cta: 'Read the agent spec', icon: BrainCircuit },
   { title: 'Accessible Component Playground', tag: 'Frontend · Accessibility', meta: 'FlyRank · FE-05', desc: 'A modal dialog, tabs and a disclosure built from scratch in React + TypeScript to WAI-ARIA patterns, then compared against the shadcn/ui and Radix implementations.', tech: ['React', 'TypeScript', 'WAI-ARIA'], href: '/playground/', cta: 'Open the playground', icon: Accessibility },
-  { title: 'AI Portfolio', tag: 'AI + Frontend', meta: 'This site', desc: 'A personal portfolio experience designed to present software engineering projects, skills, and AI-assisted work.', tech: ['React', 'Vite'], icon: Sparkles },
+  { title: 'AI Portfolio', tag: 'AI + Frontend', meta: 'This site', desc: 'A personal portfolio experience designed to present software engineering projects, skills, and AI-assisted work. The full source is public on GitHub.', tech: ['React', 'Vite'], href: 'https://github.com/nadouch123/ichrak-portfolio', cta: 'See the code on GitHub', external: true, icon: Sparkles },
   { title: 'UtopiaHire', tag: 'AI Job Platform', desc: 'A job-platform concept focused on connecting candidates and opportunities with an AI-oriented experience.', tech: ['Angular', 'TypeScript', 'AI'], icon: Layers },
   { title: 'Mini Todo App', tag: 'Full-Stack Web', meta: 'IEC Telecom internship', desc: 'A task-management application built during a full-stack internship with a Laravel backend and React frontend.', tech: ['Laravel', 'React', 'JWT', 'Docker'], icon: Code2 },
   { title: 'Smart Bracelet', tag: 'IoT + Microservices', desc: 'An IoT architecture concept combining device management, telemetry, processing, notifications, storage, and analytics.', tech: ['ESP32', 'MQTT', 'APIs'], icon: Cpu },
@@ -65,7 +65,7 @@ function App() {
       <header className={scrolled || open ? 'nav scrolled' : 'nav'}>
         <div className="nav-inner">
           <a className="brand" href="#top" aria-label="Ichrak Matrouh, back to top">
-            <img src="/logo.jfif" alt="" width="40" height="40" />
+            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <nav id="site-nav" className={open ? 'nav-links open' : 'nav-links'} aria-label="Main">
@@ -152,7 +152,7 @@ function App() {
                 const Icon = p.icon;
                 const Tag = p.href ? 'a' : 'article';
                 return (
-                  <Tag key={p.title} className={'card reveal' + (p.featured ? ' featured' : '') + (p.href ? ' linked' : '')} {...(p.href ? { href: p.href } : {})} style={{ '--d': `${(i % 2) * 80}ms` }}>
+                  <Tag key={p.title} className={'card reveal' + (p.featured ? ' featured' : '') + (p.href ? ' linked' : '')} {...(p.href ? { href: p.href } : {})} {...(p.external ? { target: '_blank', rel: 'noreferrer' } : {})} style={{ '--d': `${(i % 2) * 80}ms` }}>
                     <div className="card-top">
                       <span className="card-icon"><Icon size={20} /></span>
                       <span className="card-num">{String(i + 1).padStart(2, '0')}</span>

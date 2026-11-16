@@ -70,3 +70,21 @@ tbody tr:hover td{background:#fbfaf7}
 @media (max-width:960px){.card-grid.three{grid-template-columns:1fr}.meta-row{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:720px){.card-grid{grid-template-columns:1fr}.head-icon{display:none}}
 @media (max-width:560px){.spec .back-link{height:40px;padding:0 14px;font-size:13px}.spec-hero{padding:124px 0 100px}.meta-row dd{font-size:22px}.spec-card{padding:22px}}
+
+/* Week 7: phone fixes for the project pages */
+.badge{font-size:12px}
+.table-wrap:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* On phones the tables were 680px wide inside a 356px box, so half of each row was hidden.
+   Below 640px every row becomes a small card, each cell with its column name. */
+@media (max-width:640px){
+  .table-wrap{overflow:visible;border:0;background:none;box-shadow:none;border-radius:0}
+  .table-wrap table,.table-wrap tbody,.table-wrap tr,.table-wrap td{display:block;min-width:0;width:100%}
+  .table-wrap thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .table-wrap tr{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .table-wrap td{border:0;padding:6px 0;font-size:15px;line-height:1.6}
+  .table-wrap td[data-label]::before{content:attr(data-label);display:block;margin-bottom:2px;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .table-wrap td:first-child::before{display:none}
+  .table-wrap td:first-child{padding-top:0}
+  .table-wrap tbody tr:hover td{background:none}
+  .table-wrap td code{overflow-wrap:anywhere}
+}

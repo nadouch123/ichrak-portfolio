@@ -81,7 +81,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo.jfif" alt="" width="40" height="40" />
+            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -162,10 +162,10 @@ export default function App() {
         <section id="deviations" className="block tinted">
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">04 — Spec vs. build</p><h2>Deviations, <em>with reasons.</em></h2></div><span className="head-icon"><GitBranch size={24} /></span></div>
-            <div className="table-wrap">
+            <div className="table-wrap" role="region" aria-label="Deviations table" tabIndex={0}>
               <table>
                 <thead><tr><th scope="col">#</th><th scope="col">The spec said</th><th scope="col">The build does</th><th scope="col">Why</th></tr></thead>
-                <tbody>{deviations.map((d, i) => <tr key={i}><td>{String(i + 1).padStart(2, '0')}</td><td>{d.spec}</td><td>{d.build}</td><td>{d.why}</td></tr>)}</tbody>
+                <tbody>{deviations.map((d, i) => <tr key={i}><td data-label="#">{String(i + 1).padStart(2, '0')}</td><td data-label="The spec said">{d.spec}</td><td data-label="The build does">{d.build}</td><td data-label="Why">{d.why}</td></tr>)}</tbody>
               </table>
             </div>
           </div>

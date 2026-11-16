@@ -1,0 +1,8 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)\\.jfif",
+      "headers": [{ "key": "Content-Type", "value": "image/jpeg" }]
+    }
+  ]
+}

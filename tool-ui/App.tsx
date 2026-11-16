@@ -43,7 +43,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo.jfif" alt="" width="40" height="40" />
+            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -105,10 +105,10 @@ export default function App() {
         <section id="contract" className="block">
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">03 — Tool contract</p><h2>Inputs, outputs, <em>errors.</em></h2></div><span className="head-icon"><ListChecks size={24} /></span></div>
-            <div className="table-wrap">
+            <div className="table-wrap" role="region" aria-label="Tool contract table" tabIndex={0}>
               <table className="contract">
                 <thead><tr><th scope="col">Tool</th><th scope="col">Runs</th><th scope="col">Input</th><th scope="col">Returns</th><th scope="col">In the UI</th></tr></thead>
-                <tbody>{contract.map(c => <tr key={c.tool}><td><code>{c.tool}</code></td><td>{c.where}</td><td><code>{c.input}</code></td><td><code>{c.returns}</code></td><td>{c.ui}</td></tr>)}</tbody>
+                <tbody>{contract.map(c => <tr key={c.tool}><td data-label="Tool"><code>{c.tool}</code></td><td data-label="Runs">{c.where}</td><td data-label="Input"><code>{c.input}</code></td><td data-label="Returns"><code>{c.returns}</code></td><td data-label="In the UI">{c.ui}</td></tr>)}</tbody>
               </table>
             </div>
             <p className="note">Every tool also takes a short <code>reason</code>, shown as “Why this tool”. The full contract, with error cases and missing-field rules, is in the README below.</p>
@@ -119,7 +119,7 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">04 — Tool definition file</p><h2><em>lib/tools.ts</em></h2></div><span className="head-icon"><FileCode2 size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>lib/tools.ts</code><span>Zod schemas + execute functions</span></div>
+              <div className="code-head"><code>lib/tools.ts</code><span>Zod schemas + execute functions</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/tools.ts.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
               <pre tabIndex={0} aria-label="lib/tools.ts source">{toolsSrc}</pre>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">05 — README</p><h2>State machine and <em>tool contract.</em></h2></div><span className="head-icon"><BookOpen size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>README.md</code><span>From the app repository</span></div>
+              <div className="code-head"><code>README.md</code><span>From the app repository</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/README.md.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
               <pre tabIndex={0} aria-label="README.md">{readmeSrc}</pre>
             </div>
           </div>
