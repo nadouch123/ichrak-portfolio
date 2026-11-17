@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { validate } from '../api/_validate.js';
 import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 const EMPTY = { name: '', email: '', message: '', company: '' };
@@ -9,6 +10,15 @@ export default function ContactForm({ fallbackEmail }) {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [fields, setFields] = useState({});
+  const formRef = useRef(null);
+  // After a failed submit, move focus to the first field that needs fixing (or the error box),
+  // so keyboard and screen reader users are not left on a disabled button or <body>.
+  const [focusTick, setFocusTick] = useState(0);
+  useEffect(() => {
+    if (!focusTick || !formRef.current) return;
+    const target = formRef.current.querySelector('[aria-invalid="true"]') || formRef.current.querySelector('.form-error');
+    target?.focus();
+  }, [focusTick]);
 
   const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -17,6 +27,17 @@ export default function ContactForm({ fallbackEmail }) {
 
   async function onSubmit(e) {
     e.preventDefault();
+    if (status === 'sending') return; // belt and braces: a second Enter press never sends twice
+    // Same rules as the server (shared function), checked first so an empty or broken form
+    // gets the right message instantly, even offline, without a round trip.
+    const { errors } = validate(form);
+    if (Object.keys(errors).length) {
+      setFields(errors);
+      setError('Please check the highlighted fields.');
+      setStatus('error');
+      setFocusTick((t) => t + 1);
+      return;
+    }
     setStatus('sending');
     setError('');
     setFields({});
@@ -35,9 +56,11 @@ export default function ContactForm({ fallbackEmail }) {
       setFields(data.fields || {});
       setError(data.error || 'Something went wrong. Please try again.');
       setStatus('error');
+      setFocusTick((t) => t + 1);
     } catch {
       setError('You seem to be offline. Your message is still here, try again when you are back.');
       setStatus('error');
+      setFocusTick((t) => t + 1);
     }
   }
 
@@ -59,7 +82,7 @@ export default function ContactForm({ fallbackEmail }) {
   const aria = (k) => ({ 'aria-labelledby': `${k}-label`, ...(fields[k] ? { 'aria-invalid': true, 'aria-describedby': `${k}-err` } : {}) });
 
   return (
-    <form className="contact-card contact-form" onSubmit={onSubmit} noValidate>
+    <form ref={formRef} className="contact-card contact-form" onSubmit={onSubmit} noValidate>
       <p className="form-title">Send me a message</p>
       <label>
         <span id="name-label">Name</span>
@@ -75,13 +98,18 @@ export default function ContactForm({ fallbackEmail }) {
         <span id="message-label">Message</span>
         <textarea name="message" rows={5} required minLength={10} maxLength={5000} value={form.message} onChange={update('message')} disabled={sending} {...aria('message')} />
         {err('message')}
+        {form.message.length > 4000 && (
+          <span className={'char-count' + (form.message.length > 4800 ? ' near' : '')} aria-live="polite">
+            {form.message.length.toLocaleString('en')} / 5,000 characters
+          </span>
+        )}
       </label>
       {/* Spam trap: hidden from people and screen readers, bots tend to fill it. */}
       <label className="hp" aria-hidden="true">
         Company <input name="company" tabIndex={-1} autoComplete="off" value={form.company} onChange={update('company')} />
       </label>
       {status === 'error' && (
-        <p className="form-error" role="alert">
+        <p className="form-error" role="alert" tabIndex={-1}>
           <AlertCircle size={18} /> <span>{error} {fallbackEmail && <>Or write to <a href={`mailto:${fallbackEmail}`}>{fallbackEmail}</a>.</>}</span>
         </p>
       )}

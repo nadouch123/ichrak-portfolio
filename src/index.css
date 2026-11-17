@@ -13,7 +13,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{margin:0;min-width:320px;background:var(--paper);font-size:16px;line-height:1.6}
+body{margin:0;background:var(--paper);font-size:16px;line-height:1.6}
 img{display:block;max-width:100%}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:6px}
@@ -259,3 +259,15 @@ h2{font-size:clamp(38px,5vw,62px);line-height:1.02}
 }
 /* Smallest phones (320px wide) */
 @media (max-width:360px){.hero h1{font-size:40px}.btn{padding:0 18px}}
+
+/* Week 9 "Break Your Own Site" fixes */
+/* Printing or saving as PDF: the scroll-in animation never runs, so show everything. */
+@media print{.reveal{opacity:1!important;transform:none!important}.nav,.skip,.scroll-cue,.hero-glow,.contact-form{display:none!important}.hero,.contact,.card.featured,.capstone{background:#fff!important;color:#000!important}.hero *,.contact *,.card.featured *,.capstone *{color:#14203a!important;background-color:transparent!important;box-shadow:none!important}}
+/* Fold phones (280px wide): the body used to be locked to 320px, so the page scrolled sideways. */
+@media (max-width:300px){.wrap,.nav-inner{width:calc(100% - 24px)}.card{padding:20px}.facts{grid-template-columns:1fr}.hero h1{font-size:36px}.btn{padding:0 14px}}
+/* Character counter under the message box, so a long paste is not cut off silently. */
+.char-count{font-size:12px;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.6);justify-self:end;margin-top:-2px}
+.char-count.near{color:#ffd28a}
+/* No-JavaScript fallback */
+.nojs{max-width:640px;margin:0 auto;padding:64px 24px;font-family:var(--sans);color:var(--text)}
+.nojs h1{font-size:44px;margin-bottom:12px}.nojs a{color:var(--blue)}
