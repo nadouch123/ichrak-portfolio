@@ -13,6 +13,7 @@ export default defineConfig({
         agentBuild: resolve(__dirname, 'agent-build/index.html'),
         toolUi: resolve(__dirname, 'tool-ui/index.html'),
         edgeCases: resolve(__dirname, 'edge-cases/index.html'),
+        cv: resolve(__dirname, 'cv/index.html'),
       },
     },
   },
