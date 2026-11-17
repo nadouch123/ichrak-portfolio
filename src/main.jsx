@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
+import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FlaskConical, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
 import { LINKS, bookingHref } from './links.js';
 import ContactForm from './ContactForm.jsx';
 import './index.css';
@@ -16,12 +16,14 @@ const profileLinks = [
 
 const posts = [
   { kind: 'Build log', title: 'What broke while building my first agent', desc: 'The Weekly Review Coach build log: what broke, what changed, what I cut.', href: '/agent-build/', date: 'Nov 2026' },
+  { kind: 'Write-up', title: 'I let the AI fix my red build', desc: 'Tests by role and label, a mocked AI route, CI on every push, and the assistant fixing a failing test by running the suite itself.', href: '/testing/', date: 'Nov 2026' },
   { kind: 'Write-up', title: 'I sabotaged my own agent ten ways', desc: 'Designing an honest state for every failure, from a dropped network to a crashed tool.', href: '/edge-cases/', date: 'Nov 2026' },
   { kind: 'Coming next', title: 'DNS, explained for my team', desc: 'What really happens between typing an address and a site answering.', date: 'Soon' },
 ];
 
 const projects = [
-  { title: 'Error states, empty states, edge cases', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-08', desc: 'I sabotaged my Weekly Review Coach ten ways (network, mid-stream cut, 429, malformed tool data, crashes) and gave every failure a designed state with a safe retry. Plus designed empty states, skeletons, a mobile Safari pass, and an automated test of the mid-stream failure.', tech: ['AI SDK', 'Error boundaries', 'Playwright'], href: '/edge-cases/', cta: 'See the sabotage checklist', icon: ShieldAlert, featured: true },
+  { title: 'Testing pass', tag: 'Testing · CI', meta: 'FlyRank · FE-09', desc: 'Vitest and React Testing Library tests for my AI chat (pending, streaming and error states, every message part, tool results) and my contact form, a Playwright test of the main flow with the AI route mocked, and GitHub Actions on every push. Then the AI assistant fixed a failing test by running the suite itself.', tech: ['Vitest', 'Testing Library', 'Playwright', 'GitHub Actions'], href: '/testing/', cta: 'See the tests and the CI', icon: FlaskConical, featured: true },
+  { title: 'Error states, empty states, edge cases', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-08', desc: 'I sabotaged my Weekly Review Coach ten ways (network, mid-stream cut, 429, malformed tool data, crashes) and gave every failure a designed state with a safe retry. Plus designed empty states, skeletons, a mobile Safari pass, and an automated test of the mid-stream failure.', tech: ['AI SDK', 'Error boundaries', 'Playwright'], href: '/edge-cases/', cta: 'See the sabotage checklist', icon: ShieldAlert },
   { title: 'Tool results in the UI', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-07', desc: 'My Weekly Review Coach rebuilt with the AI SDK: Zod-typed server tools, four designed states for every tool call, results rendered as real components (file preview, bar chart, review card), and a plan that waits for my approval. Includes the tool definition file and the README contract.', tech: ['AI SDK', 'Zod', 'React'], href: '/tool-ui/', cta: 'See the tools and the code', icon: Layers },
   { title: 'Weekly Review Coach (live agent)', tag: 'AI Agent · Build', meta: 'FlyRank · Checkpoint 1', desc: 'The working version of the agent from my spec: a Claude agent on Vercel that reads my notes through tools, checks my live portfolio, reviews my week and quizzes me. With the full build log: what broke, what changed, what I cut.', tech: ['Claude API', 'Tool use', 'Vercel'], href: '/agent-build/', cta: 'See the build and try it', icon: Cpu },
   { title: 'Weekly Review Coach (spec)', tag: 'AI Agent Design', meta: 'FlyRank · FL-06', desc: "Design spec for my personal AI agent: a Claude Project that reviews my internship week from my own notes, quizzes me, and drafts next week's plan. Covers the access plan, six eval cases, guardrails and platform choice.", tech: ['Claude Project', 'Evals', 'Guardrails'], href: '/agent-spec/', cta: 'Read the agent spec', icon: BrainCircuit },
@@ -117,7 +119,7 @@ function App() {
                 <li><MapPin size={15} /> Sousse, Tunisia</li>
                 <li><span className="live" /> Open to opportunities</li>
               </ul>
-              <a className="now-link" href="/edge-cases/">Latest: an AI chat that survives ten kinds of failure <ArrowUpRight size={15} /></a>
+              <a className="now-link" href="/testing/">Latest: tests and CI my AI assistant can run <ArrowUpRight size={15} /></a>
             </aside>
           </div>
           <div className="wrap focus-strip reveal">
@@ -200,7 +202,7 @@ function App() {
               <a className="capstone reveal" href="/agent-build/">
                 <span className="capstone-badge"><Flag size={14} /> Capstone · in progress</span>
                 <h3>Weekly Review Coach</h3>
-                <p>A Claude agent that reads my weekly notes through tools, reviews my week, and quizzes me. Spec, live build, tool UI and failure states are done; the final capstone lands here, with the FlyRank completion badge once it's approved.</p>
+                <p>A Claude agent that reads my weekly notes through tools, reviews my week, and quizzes me. Spec, live build, tool UI, failure states and tests are done; the final capstone lands here, with the FlyRank completion badge once it's approved.</p>
                 <span className="card-cta">Follow the build <ArrowUpRight size={16} /></span>
               </a>
               <ol className="posts">

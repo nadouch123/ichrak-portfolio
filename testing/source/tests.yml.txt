@@ -1,0 +1,72 @@
+name: Tests
+
+# Runs on every push and on every pull request into main.
+# Make "Tests / *" required checks in the branch rules for main so a red run blocks merging.
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  portfolio:
+    name: Portfolio (contact form)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  agent-unit:
+    name: Weekly Review Coach (component + route tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: weekly-review-coach
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: weekly-review-coach/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  agent-e2e:
+    name: Weekly Review Coach (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: weekly-review-coach
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: weekly-review-coach/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: weekly-review-coach/playwright-report
+          retention-days: 7
