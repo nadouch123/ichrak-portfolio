@@ -14,6 +14,7 @@ export default defineConfig({
         toolUi: resolve(__dirname, 'tool-ui/index.html'),
         edgeCases: resolve(__dirname, 'edge-cases/index.html'),
         testing: resolve(__dirname, 'testing/index.html'),
+        threeD: resolve(__dirname, '3d/index.html'),
         cv: resolve(__dirname, 'cv/index.html'),
       },
     },

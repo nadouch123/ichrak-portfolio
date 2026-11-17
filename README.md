@@ -131,3 +131,7 @@ What each deployed file does:
 - `playground/`, `agent-spec/`, `agent-build/`, `tool-ui/`, `edge-cases/`: one folder per FlyRank assignment page, each its own HTML entry.
 - `vite.config.ts`: tells Vite which HTML pages to build. `public/logo.jfif`: favicon and logo.
 - `package.json` / `package-lock.json`: dependencies (React, lucide-react icons, Radix for the FE-05 comparison) and build scripts.
+
+## FE-AA2 — Your first 3D experience on the web
+
+A ceramic mug configurator in React Three Fiber at [/3d/](https://ichrak-matrouh.vercel.app/3d/): glaze, finish, handle, saucer and lighting, plus a drag-and-drop viewer for any `.glb`. Lazy-loaded, with a still-picture fallback. Full write-up, perf note and what I'd add next: [3d/README.md](3d/README.md).
