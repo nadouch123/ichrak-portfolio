@@ -22,8 +22,11 @@ export function MessageView({ message, live, busy, onApprovePlan, onRejectPlan, 
       {m.parts.map((part, i) => {
         if (part.type === 'text') {
           if (!part.text.trim()) return null;
-          // Render user messages as markdown too, so pasted notes keep their formatting.
-          return <div key={i} className={m.role === 'user' ? 'bubble bubble--user' : 'bubble'} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(part.text, { async: false }) as string) }} />;
+          // User text stays plain text: what someone typed is shown exactly as typed, never parsed as HTML or markdown.
+          // (Formatting for pasted notes belongs in the knowledge-file preview, not the chat bubble.)
+          return m.role === 'user'
+            ? <div key={i} className="bubble bubble--user">{part.text}</div>
+            : <div key={i} className="bubble" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(part.text, { async: false }) as string) }} />;
         }
         if (part.type.startsWith('tool-')) {
           const tp = part as ToolPart;
