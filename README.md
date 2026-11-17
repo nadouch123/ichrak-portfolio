@@ -116,3 +116,18 @@ Setup (Vercel > ichrak-portfolio > Settings > Environment Variables, then redepl
 | `CONTACT_FROM` | no | Sender. Defaults to `onboarding@resend.dev`, which only delivers to the email the Resend account was created with |
 
 Without the key, the form answers "not switched on yet" and points visitors to my email.
+
+## PF-04 — Personal website live
+
+Live URL: **https://ichrak-matrouh.vercel.app** (HTTPS, Vercel free Hobby tier). The older `ichrak-portfolio-seven.vercel.app` still works.
+
+How it is hosted: this GitHub repo is linked to a Vercel project. Every push to `main` builds the site (`vite build`) and publishes the `dist/` folder to production with an automatic HTTPS certificate.
+
+What each deployed file does:
+- `index.html` + `src/main.jsx` + `src/index.css`: the home page (positioning, work, writing & capstone, experience, contact).
+- `src/links.js`: the single place for LinkedIn, GitHub, CV, booking and email links.
+- `src/ContactForm.jsx` + `api/contact.js`: the contact form and the serverless function that emails me (see the Week 8 section above).
+- `cv/index.html` + `cv/cv.css`: my CV as a web page; "Save as PDF" uses the browser's print dialog and a print stylesheet.
+- `playground/`, `agent-spec/`, `agent-build/`, `tool-ui/`, `edge-cases/`: one folder per FlyRank assignment page, each its own HTML entry.
+- `vite.config.ts`: tells Vite which HTML pages to build. `public/logo.jfif`: favicon and logo.
+- `package.json` / `package-lock.json`: dependencies (React, lucide-react icons, Radix for the FE-05 comparison) and build scripts.
