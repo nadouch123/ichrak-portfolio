@@ -54,23 +54,25 @@ export default function ContactForm({ fallbackEmail }) {
 
   const sending = status === 'sending';
   const err = (k) => fields[k] && <span className="field-err" id={`${k}-err`}>{fields[k]}</span>;
-  const aria = (k) => (fields[k] ? { 'aria-invalid': true, 'aria-describedby': `${k}-err` } : {});
+  // aria-labelledby keeps the field's name to just "Name"/"Email"/"Message": the error span sits inside the
+  // <label>, so without it the error text would become part of the name and be read out twice.
+  const aria = (k) => ({ 'aria-labelledby': `${k}-label`, ...(fields[k] ? { 'aria-invalid': true, 'aria-describedby': `${k}-err` } : {}) });
 
   return (
     <form className="contact-card contact-form" onSubmit={onSubmit} noValidate>
       <p className="form-title">Send me a message</p>
       <label>
-        <span>Name</span>
+        <span id="name-label">Name</span>
         <input name="name" autoComplete="name" required maxLength={100} value={form.name} onChange={update('name')} disabled={sending} {...aria('name')} />
         {err('name')}
       </label>
       <label>
-        <span>Email</span>
+        <span id="email-label">Email</span>
         <input name="email" type="email" autoComplete="email" required maxLength={200} value={form.email} onChange={update('email')} disabled={sending} {...aria('email')} />
         {err('email')}
       </label>
       <label>
-        <span>Message</span>
+        <span id="message-label">Message</span>
         <textarea name="message" rows={5} required minLength={10} maxLength={5000} value={form.message} onChange={update('message')} disabled={sending} {...aria('message')} />
         {err('message')}
       </label>
