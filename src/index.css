@@ -262,7 +262,7 @@ h2{font-size:clamp(38px,5vw,62px);line-height:1.02}
 
 /* Week 9 "Break Your Own Site" fixes */
 /* Printing or saving as PDF: the scroll-in animation never runs, so show everything. */
-@media print{.reveal{opacity:1!important;transform:none!important}.nav,.skip,.scroll-cue,.hero-glow,.contact-form{display:none!important}.hero,.contact,.card.featured,.capstone{background:#fff!important;color:#000!important}}
+@media print{.reveal{opacity:1!important;transform:none!important}.nav,.skip,.scroll-cue,.hero-glow,.contact-form{display:none!important}.hero,.contact,.card.featured,.capstone{background:#fff!important;color:#000!important}.hero *,.contact *,.card.featured *,.capstone *{color:#14203a!important;background-color:transparent!important;box-shadow:none!important}}
 /* Fold phones (280px wide): the body used to be locked to 320px, so the page scrolled sideways. */
 @media (max-width:300px){.wrap,.nav-inner{width:calc(100% - 24px)}.card{padding:20px}.facts{grid-template-columns:1fr}.hero h1{font-size:36px}.btn{padding:0 14px}}
 /* Character counter under the message box, so a long paste is not cut off silently. */
