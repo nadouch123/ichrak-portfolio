@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FlaskConical, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
 import { LINKS, bookingHref } from './links.js';
 import ContactForm from './ContactForm.jsx';
+import { FlyrankBadge } from './FlyrankBadge.jsx';
 import './index.css';
 
 const NAV = ['work', 'about', 'writing', 'experience', 'contact'];
@@ -263,7 +264,7 @@ function App() {
               <ContactForm fallbackEmail={LINKS.email} />
             </div>
           </div>
-          <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>AI · Software · Technology</span></footer>
+          <footer className="wrap footer"><div className="footer-meta"><span>© 2026 Ichrak Matrouh</span><span>AI · Software · Technology</span><span>FlyRank AI Internship graduate</span></div><FlyrankBadge /></footer>
         </section>
       </main>
     </div>
