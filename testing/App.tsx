@@ -22,7 +22,7 @@ const brief = [
   ['Highest-risk UI, tested', 'The chat message renderer (every part type), the contact form, and the tool-result components. Every query is by role, label or visible text, never by class or test id.'],
   ['The AI route is mocked', 'Component tests replace fetch and fail on any request they did not expect. The Playwright test answers /api/chat inside the browser. No test can reach a model.'],
   ['One Playwright test, primary flow', 'Start the weekly review, watch the tools run, see the review card, approve next week’s plan, and find it saved in the files panel.'],
-  ['CI that blocks merging', 'GitHub Actions runs every suite on every push and pull request. The jobs are the checks a branch rule on main requires.'],
+  ['CI that blocks merging', 'GitHub Actions runs every suite on every push and pull request. A branch rule on main can require them, so a red run can’t be merged.'],
   ['AI fixes a failing test', 'A change broke a test. The AI assistant ran the suite itself, read the failure, fixed the code, re-ran it, and pushed. CI went red, then green.'],
 ];
 
@@ -110,7 +110,7 @@ export default function App() {
                 <figcaption>The Tests workflow on GitHub Actions: three jobs, all green.</figcaption>
               </figure>
             </div>
-            <p className="note">Three jobs: the portfolio (contact form tests, then the production build), the coach’s typecheck and Vitest suite, and the coach’s Playwright test in Chromium. A branch rule on main makes them required, so a red run can’t be merged. <a href={ACTIONS} target="_blank" rel="noreferrer">All runs</a> · <a href={PR} target="_blank" rel="noreferrer">The pull request</a></p>
+            <p className="note">Three jobs: the portfolio (contact form tests, then the production build), the coach’s typecheck and Vitest suite, and the coach’s Playwright test in Chromium. With these three jobs required by a branch rule on main, a red run can’t be merged. <a href={ACTIONS} target="_blank" rel="noreferrer">All runs</a> · <a href={PR} target="_blank" rel="noreferrer">The pull request</a></p>
           </div>
         </section>
 
