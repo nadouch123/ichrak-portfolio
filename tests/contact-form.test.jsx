@@ -61,7 +61,9 @@ describe('ContactForm', () => {
     }, { status: 422 }));
     render(<ContactForm />);
 
-    await fillIn(user, { email: 'sam@nowhere', message: 'hi' });
+    // Valid in the browser, rejected by the server (e.g. a rule only the server knows): the server's errors still land.
+    await fillIn(user, { email: 'sam@nowhere.example', message: 'Hello there, hi!' });
+    const api = vi.mocked(fetch);
     await user.click(screen.getByRole('button', { name: 'Send message' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Please check the highlighted fields.');
@@ -71,7 +73,9 @@ describe('ContactForm', () => {
     expect(screen.getByLabelText('Message')).toHaveAccessibleDescription('Please write at least a sentence (10 characters).');
     expect(screen.getByLabelText('Name')).toBeValid();
     // what they typed is kept
-    expect(email).toHaveValue('sam@nowhere');
+    expect(email).toHaveValue('sam@nowhere.example');
+    expect(api).toHaveBeenCalledOnce();
+    expect(email).toHaveFocus();
   });
 
   test('fixing a field clears its error as soon as the visitor types', async () => {
@@ -116,5 +120,53 @@ describe('ContactForm', () => {
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Message')).toHaveValue('');
+  });
+
+  // Week 9 "Break Your Own Site": found by trying to break the live form.
+  test('an empty form is caught in the browser: no request, field errors, focus on the first problem', async () => {
+    const user = userEvent.setup();
+    const api = mockApi(() => Response.json({ ok: true }));
+    render(<ContactForm />);
+
+    await user.click(screen.getByRole('button', { name: 'Send message' }));
+
+    expect(api).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Name')).toHaveAccessibleDescription('Please add your name.');
+    expect(screen.getByLabelText('Email')).toHaveAccessibleDescription('Please add your email so I can reply.');
+    expect(screen.getByLabelText('Name')).toHaveFocus();
+  });
+
+  test('offline with an empty form: says what to fix, not "you are offline"', async () => {
+    const user = userEvent.setup();
+    mockApi(() => { throw new TypeError('Failed to fetch'); });
+    render(<ContactForm />);
+
+    await user.click(screen.getByRole('button', { name: 'Send message' }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Please check the highlighted fields.');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('offline');
+  });
+
+  test('spaces only and a broken email are caught before sending', async () => {
+    const user = userEvent.setup();
+    const api = mockApi(() => Response.json({ ok: true }));
+    render(<ContactForm />);
+
+    await fillIn(user, { name: '   ', email: 'a@b', message: '          ' });
+    await user.click(screen.getByRole('button', { name: 'Send message' }));
+
+    expect(api).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Email')).toHaveAccessibleDescription('That email does not look right.');
+    expect(screen.getByLabelText('Name')).toHaveFocus();
+  });
+
+  test('a long message shows a character counter instead of being cut off silently', async () => {
+    const user = userEvent.setup();
+    render(<ContactForm />);
+
+    await user.click(screen.getByLabelText('Message'));
+    await user.paste('a'.repeat(4900));
+
+    expect(screen.getByText('4,900 / 5,000 characters')).toBeInTheDocument();
   });
 });
