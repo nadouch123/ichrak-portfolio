@@ -5,7 +5,7 @@ import { LINKS, bookingHref } from './links.js';
 import ContactForm from './ContactForm.jsx';
 import './index.css';
 
-const NAV = ['about', 'work', 'writing', 'experience', 'contact'];
+const NAV = ['work', 'about', 'writing', 'experience', 'contact'];
 
 const profileLinks = [
   { label: 'LinkedIn', href: LINKS.linkedin, icon: Linkedin, external: true },
@@ -23,7 +23,7 @@ const posts = [
 const projects = [
   { title: 'Error states, empty states, edge cases', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-08', desc: 'I sabotaged my Weekly Review Coach ten ways (network, mid-stream cut, 429, malformed tool data, crashes) and gave every failure a designed state with a safe retry. Plus designed empty states, skeletons, a mobile Safari pass, and an automated test of the mid-stream failure.', tech: ['AI SDK', 'Error boundaries', 'Playwright'], href: '/edge-cases/', cta: 'See the sabotage checklist', icon: ShieldAlert, featured: true },
   { title: 'Tool results in the UI', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-07', desc: 'My Weekly Review Coach rebuilt with the AI SDK: Zod-typed server tools, four designed states for every tool call, results rendered as real components (file preview, bar chart, review card), and a plan that waits for my approval. Includes the tool definition file and the README contract.', tech: ['AI SDK', 'Zod', 'React'], href: '/tool-ui/', cta: 'See the tools and the code', icon: Layers },
-  { title: 'Weekly Review Coach (live agent)', tag: 'AI Agent · Build', meta: 'FlyRank · Checkpoint 1', desc: 'The working version of my FL-06 agent: a Claude agent on Vercel that reads my notes through tools, checks my live portfolio, reviews my week and quizzes me. With the full build log: what broke, what changed, what I cut.', tech: ['Claude API', 'Tool use', 'Vercel'], href: '/agent-build/', cta: 'See the build and try it', icon: Cpu },
+  { title: 'Weekly Review Coach (live agent)', tag: 'AI Agent · Build', meta: 'FlyRank · Checkpoint 1', desc: 'The working version of the agent from my spec: a Claude agent on Vercel that reads my notes through tools, checks my live portfolio, reviews my week and quizzes me. With the full build log: what broke, what changed, what I cut.', tech: ['Claude API', 'Tool use', 'Vercel'], href: '/agent-build/', cta: 'See the build and try it', icon: Cpu },
   { title: 'Weekly Review Coach (spec)', tag: 'AI Agent Design', meta: 'FlyRank · FL-06', desc: "Design spec for my personal AI agent: a Claude Project that reviews my internship week from my own notes, quizzes me, and drafts next week's plan. Covers the access plan, six eval cases, guardrails and platform choice.", tech: ['Claude Project', 'Evals', 'Guardrails'], href: '/agent-spec/', cta: 'Read the agent spec', icon: BrainCircuit },
   { title: 'Accessible Component Playground', tag: 'Frontend · Accessibility', meta: 'FlyRank · FE-05', desc: 'A modal dialog, tabs and a disclosure built from scratch in React + TypeScript to WAI-ARIA patterns, then compared against the shadcn/ui and Radix implementations.', tech: ['React', 'TypeScript', 'WAI-ARIA'], href: '/playground/', cta: 'Open the playground', icon: Accessibility },
   { title: 'AI Portfolio', tag: 'AI + Frontend', meta: 'This site', desc: 'A personal portfolio experience designed to present software engineering projects, skills, and AI-assisted work. The full source is public on GitHub.', tech: ['React', 'Vite'], href: 'https://github.com/nadouch123/ichrak-portfolio', cta: 'See the code on GitHub', external: true, icon: Sparkles },
@@ -95,9 +95,9 @@ function App() {
           <div className="hero-glow" aria-hidden="true" />
           <div className="wrap hero-grid">
             <div className="hero-copy reveal">
-              <p className="eyebrow light"><span className="dot" /> AI &amp; Software Engineering</p>
-              <h1>Building digital experiences with <em>AI.</em></h1>
-              <p className="hero-lead">I'm Ichrak Matrouh, a computer science engineering student and frontend AI engineering intern at FlyRank. I build AI products people can trust: interfaces that show what the AI is doing, handle failure honestly, and stay usable for everyone.</p>
+              <p className="eyebrow light"><span className="dot" /> Frontend · React · AI</p>
+              <h1>I build AI interfaces people can <em>trust.</em></h1>
+              <p className="hero-lead">I'm Ichrak Matrouh, a frontend AI engineering intern at FlyRank and a computer science engineering student. I build React interfaces for AI agents that show what the AI is doing, handle failure honestly, and stay usable for everyone.</p>
               <div className="hero-actions">
                 <a className="btn btn-light" href="#work">View my work <ArrowUpRight size={17} /></a>
                 <a className="btn btn-outline" href="#contact">Let's connect</a>
@@ -117,54 +117,20 @@ function App() {
                 <li><MapPin size={15} /> Sousse, Tunisia</li>
                 <li><span className="live" /> Open to opportunities</li>
               </ul>
-              <a className="now-link" href="/edge-cases/">Latest: FE-08, error and empty states <ArrowUpRight size={15} /></a>
+              <a className="now-link" href="/edge-cases/">Latest: an AI chat that survives ten kinds of failure <ArrowUpRight size={15} /></a>
             </aside>
           </div>
           <div className="wrap focus-strip reveal">
-            {['Software Engineering', 'Artificial Intelligence', 'Full-stack Web', 'Connected Systems'].map(f => <span key={f}>{f}</span>)}
+            {['React + TypeScript', 'AI SDK & tool calls', 'Error & empty states', 'Accessible UI'].map(f => <span key={f}>{f}</span>)}
           </div>
-          <a className="scroll-cue" href="#about" aria-label="Scroll to About"><ArrowDown size={16} /></a>
-        </section>
-
-        <section id="about" className="section">
-          <div className="wrap split">
-            <div className="reveal">
-              <p className="eyebrow">01 — About</p>
-              <h2>Curious by nature.<br /><em>Builder by choice.</em></h2>
-            </div>
-            <div className="prose reveal">
-              <p className="big">I combine software engineering fundamentals with AI to turn ideas into useful digital experiences.</p>
-              <p>My work spans frontend development, backend APIs, machine learning, and connected systems. I care about clean interfaces, thoughtful product decisions, and using AI as a development partner, not a replacement for engineering judgment.</p>
-              <div className="facts">
-                <div><b>CS</b><span>Engineering degree</span></div>
-                <div><b>AI</b><span>Focused</span></div>
-                <div><b>Web</b><span>Full-stack</span></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="skills" className="section tinted">
-          <div className="wrap">
-            <div className="section-head reveal">
-              <div><p className="eyebrow">02 — Toolkit</p><h2>Skills that turn ideas <em>into products.</em></h2></div>
-            </div>
-            <div className="skill-groups">
-              {skillGroups.map((g, i) => (
-                <div className="skill-group reveal" key={g.name} style={{ '--d': `${i * 80}ms` }}>
-                  <p className="group-name">{g.name}</p>
-                  <div className="chips">{g.items.map(s => <span key={s}>{s}</span>)}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <a className="scroll-cue" href="#work" aria-label="Scroll to my work"><ArrowDown size={16} /></a>
         </section>
 
         <section id="work" className="section">
           <div className="wrap">
             <div className="section-head reveal">
-              <div><p className="eyebrow">03 — Selected work</p><h2>Projects with a <em>purpose.</em></h2></div>
-              <p className="section-note">Academic, internship, AI, web, and IoT work, including my FlyRank assignments.</p>
+              <div><p className="eyebrow">01 — Selected work</p><h2>AI interfaces, <em>built and shipped.</em></h2></div>
+              <p className="section-note">My FlyRank internship work comes first, and each linked card opens a live build you can try. Earlier academic and internship projects follow.</p>
             </div>
             <div className="work-grid">
               {projects.map((p, i) => {
@@ -186,6 +152,40 @@ function App() {
                   </Tag>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        <section id="about" className="section tinted">
+          <div className="wrap split">
+            <div className="reveal">
+              <p className="eyebrow">02 — About</p>
+              <h2>Curious by nature.<br /><em>Builder by choice.</em></h2>
+            </div>
+            <div className="prose reveal">
+              <p className="big">I combine software engineering fundamentals with AI to turn ideas into useful digital experiences.</p>
+              <p>My work spans frontend development, backend APIs, machine learning, and connected systems. I care about clean interfaces, thoughtful product decisions, and using AI as a development partner, not a replacement for engineering judgment.</p>
+              <div className="facts">
+                <div><b>CS</b><span>Engineering degree</span></div>
+                <div><b>AI</b><span>Focused</span></div>
+                <div><b>Web</b><span>Full-stack</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="skills" className="section">
+          <div className="wrap">
+            <div className="section-head reveal">
+              <div><p className="eyebrow">03 — Toolkit</p><h2>Skills that turn ideas <em>into products.</em></h2></div>
+            </div>
+            <div className="skill-groups">
+              {skillGroups.map((g, i) => (
+                <div className="skill-group reveal" key={g.name} style={{ '--d': `${i * 80}ms` }}>
+                  <p className="group-name">{g.name}</p>
+                  <div className="chips">{g.items.map(s => <span key={s}>{s}</span>)}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -244,8 +244,8 @@ function App() {
           <div className="wrap contact-grid">
             <div className="reveal">
               <p className="eyebrow light">06 — Contact</p>
-              <h2>Have an idea?<br /><em>Let's build it.</em></h2>
-              <p className="hero-lead">I'm open to internships, remote opportunities, collaborations, and AI/software projects.</p>
+              <h2>Hiring a frontend intern?<br /><em>Let's talk.</em></h2>
+              <p className="hero-lead">I'm looking for frontend and AI engineering internships, including remote roles. Send me a message here, or email me directly.</p>
               <div className="contact-side">
                 <a className="mail" href={`mailto:${LINKS.email}`}><Mail size={18} /> <span>{LINKS.email}</span> <ArrowUpRight size={16} /></a>
                 <a className="mail" href={bookingHref} {...(LINKS.booking ? { target: '_blank', rel: 'noreferrer' } : {})}><CalendarDays size={18} /> <span>Book a 20-minute call</span> <ArrowUpRight size={16} /></a>
