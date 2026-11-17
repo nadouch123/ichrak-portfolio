@@ -151,6 +151,8 @@ h2{font-size:clamp(38px,5vw,62px);line-height:1.02}
 .socials a:hover{background:rgba(255,255,255,.1)}
 .footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-top:clamp(80px,10vw,120px);padding:28px 0 36px;border-top:1px solid var(--line-dark);font-size:13px;color:rgba(255,255,255,.45)}
 .footer-meta{display:flex;flex-direction:column;gap:6px}
+/* The badge is a fixed-size generated snippet; on very narrow phones drop its "Verify" chip so nothing overlaps (the whole badge is still the link). */
+@media (max-width:340px){.flyrank-badge-chip{display:none!important}}
 
 /* Profile links (PF-04) */
 .profile-links{list-style:none;padding:0;margin:28px 0 0;display:flex;flex-wrap:wrap;gap:8px}
