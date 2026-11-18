@@ -1,381 +1,390 @@
-// The 3D part of /3d/. This file and everything it imports (three, React Three Fiber, drei)
-// is its own chunk: App.tsx loads it with React.lazy only when the gate says so.
-import { Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, DragEvent, ReactNode } from 'react';
+// The 3D part of /3d/: my work as a living neural network.
+// This file and everything it imports (three, React Three Fiber, drei) is its own chunk:
+// Stage.tsx loads it with React.lazy only when the gate says so.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 // Deep imports: the drei barrel would also pull in text, HTML and other helpers this page never uses.
-import { ContactShadows } from '@react-three/drei/core/ContactShadows';
 import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import { PerformanceMonitor } from '@react-three/drei/core/PerformanceMonitor';
-import { useGLTF } from '@react-three/drei/core/Gltf';
-import { GLTFLoader, DRACOLoader, MeshoptDecoder } from 'three-stdlib';
 import * as THREE from 'three';
-import { RotateCcw, RotateCw, Upload, Undo2 } from 'lucide-react';
+import { ArrowUpRight, Network, Sparkles, X, Zap } from 'lucide-react';
+import { EDGES, LAYERS, NODES, THEMES, THEME_CENTERS, embeddingLayout, lineage, networkLayout, rng } from './graph';
+import type { Theme, Vec3 } from './graph';
 
-export const MUG_URL = '/3d/studio-mug.glb';
-const MAX_FILE = 30 * 1024 * 1024;
+type View = 'network' | 'embedding';
 
-const GLAZES = [
-  { name: 'Harbour blue', hex: '#2457a6' },
-  { name: 'Celadon', hex: '#8fb9a8' },
-  { name: 'Terracotta', hex: '#c0603e' },
-  { name: 'Charcoal', hex: '#2a2c31' },
-  { name: 'Oat', hex: '#e7dcc8' },
-];
-const FINISHES = { gloss: 0.12, satin: 0.42, matte: 0.85 } as const;
-type Finish = keyof typeof FINISHES;
-type Light = 'studio' | 'sunset' | 'night';
-type Handle = 'loop' | 'strap';
+const LAYER_COLORS = ['#9cc2ff', '#5b8def', '#e3bf7a', '#f4f1ea'].map(c => new THREE.Color(c));
+const THEME_COLORS: Record<Theme, THREE.Color> = {
+  ai: new THREE.Color('#a597ff'), data: new THREE.Color('#4fd1c5'), web: new THREE.Color('#5b8def'), systems: new THREE.Color('#f0a35e'),
+};
+const THEME_HEX: Record<Theme, string> = { ai: '#a597ff', data: '#4fd1c5', web: '#5b8def', systems: '#f0a35e' };
+const LAYER_HEX = ['#9cc2ff', '#5b8def', '#e3bf7a', '#f4f1ea'];
+const PARTICLES = 1600;
+const SEGMENTS = 18; // per curved edge
+const WAVE_MS = 650; // per layer
 
-type Custom = { name: string; bytes: number; scene: THREE.Group };
+const ease = (t: number) => t * t * (3 - 2 * t);
+const lerp3 = (a: Vec3, b: Vec3, t: number, out: THREE.Vector3) => out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
 
-// ---------- scene pieces ----------
+// ---------- shaders ----------
 
-/** Scales any object to fit a 1.4-unit box, centres it on x/z and stands it on the floor (y = 0). */
-function Fit({ object, turn }: { object: THREE.Object3D; turn: number }) {
-  const outer = useRef<THREE.Group>(null!);
-  const inner = useRef<THREE.Group>(null!);
-  const invalidate = useThree(s => s.invalidate);
-  useLayoutEffect(() => {
-    const g = inner.current;
-    g.position.set(0, 0, 0);
-    g.scale.setScalar(1);
-    g.updateWorldMatrix(true, true);
-    const box = new THREE.Box3().setFromObject(object); // includes hidden parts, so toggling a part never rescales
-    const size = box.getSize(new THREE.Vector3());
-    const s = 1.4 / Math.max(size.x, size.y, size.z, 1e-6);
-    const c = box.getCenter(new THREE.Vector3());
-    g.scale.setScalar(s);
-    g.position.set(-c.x * s, -box.min.y * s, -c.z * s);
-    invalidate();
-  }, [object, invalidate]);
-  useEffect(() => { outer.current.rotation.y = turn; invalidate(); }, [turn, invalidate]);
-  return <group ref={outer}><group ref={inner}><primitive object={object} /></group></group>;
+const edgeVert = /* glsl */ `
+  attribute float aT; attribute float aLayer; attribute float aHi; attribute float aSeed; attribute vec3 aColor;
+  varying float vT; varying float vLayer; varying float vHi; varying float vSeed; varying vec3 vColor;
+  void main() {
+    vT = aT; vLayer = aLayer; vHi = aHi; vSeed = aSeed; vColor = aColor;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }`;
+const edgeFrag = /* glsl */ `
+  uniform float uTime; uniform float uFlow; uniform float uWave; uniform float uSel;
+  varying float vT; varying float vLayer; varying float vHi; varying float vSeed; varying vec3 vColor;
+  void main() {
+    float off = uSel * (1.0 - vHi);              // edges outside the selection fade back
+    float base = mix(0.3, 0.05, off) + uSel * vHi * 0.4;
+    float p = fract(vT - uTime * 0.32 + vSeed);  // a short bright packet travelling along the edge
+    float pulse = smoothstep(0.0, 0.05, p) * (1.0 - smoothstep(0.05, 0.16, p)) * uFlow * mix(1.0, 0.1, off);
+    float w = uWave - (vLayer + vT);             // the forward-pass wave front
+    float wave = uWave > -0.5 ? exp(-w * w * 16.0) : 0.0;
+    float k = base + pulse * 1.1 + wave * 1.6;
+    gl_FragColor = vec4(vColor + vec3(max(k - 1.0, 0.0)), min(k, 1.0)); // alpha = brightness, so the transparent canvas stays clear
+  }`;
+
+const haloVert = /* glsl */ `
+  attribute float aSize; attribute vec3 aColor; uniform float uScale;
+  varying vec3 vColor;
+  void main() {
+    vColor = aColor;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = aSize * uScale / -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const haloFrag = /* glsl */ `
+  varying vec3 vColor;
+  void main() {
+    float d = length(gl_PointCoord - 0.5) * 2.0;
+    float a = pow(max(1.0 - d, 0.0), 2.2) * 0.8;
+    gl_FragColor = vec4(vColor, a);
+  }`;
+
+const fieldVert = /* glsl */ `
+  attribute vec3 aCluster; attribute vec3 aColor; attribute float aRand;
+  uniform float uMorph; uniform float uTime; uniform float uScale;
+  varying vec3 vColor; varying float vA;
+  void main() {
+    vec3 p = mix(position, aCluster, uMorph);
+    p += vec3(sin(uTime * 0.4 + aRand * 6.28), cos(uTime * 0.33 + aRand * 9.1), sin(uTime * 0.27 + aRand * 4.0)) * 0.06;
+    vColor = aColor;
+    vA = mix(0.35, 0.6, uMorph) * (0.5 + 0.5 * aRand);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_PointSize = mix(2.0, 2.8, uMorph) * uScale / -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const fieldFrag = /* glsl */ `
+  varying vec3 vColor; varying float vA;
+  void main() {
+    float d = length(gl_PointCoord - 0.5) * 2.0;
+    if (d > 1.0) discard;
+    gl_FragColor = vec4(vColor, vA * (1.0 - d * d));
+  }`;
+
+// ---------- labels: text drawn once into small canvas textures (no font library needed) ----------
+
+function makeLabel(text: string, opts: { size: number; color: string; weight?: number; caps?: boolean }) {
+  const px = 64;
+  const font = `${opts.weight ?? 600} ${px}px Inter, ui-sans-serif, system-ui, sans-serif`;
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d')!;
+  const s = opts.caps ? text.toUpperCase() : text;
+  ctx.font = font;
+  const w = Math.ceil(ctx.measureText(s).width + (opts.caps ? s.length * 6 : 0)) + 24;
+  c.width = w; c.height = px + 28;
+  ctx.font = font;
+  if (opts.caps) (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = '6px';
+  ctx.fillStyle = opts.color;
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(5,10,20,.9)';
+  ctx.shadowBlur = 12;
+  ctx.fillText(s, 12, c.height / 2);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set((opts.size * c.width) / c.height, opts.size, 1);
+  sprite.center.set(0.5, 0);
+  sprite.renderOrder = 10;
+  return sprite;
 }
 
-type MugLook = { glaze: string; finish: Finish; lustre: number; interior: 'cream' | 'match'; handle: Handle; saucer: boolean; wireframe: boolean };
+// ---------- the scene ----------
 
-function Mug({ look, turn, onReady }: { look: MugLook; turn: number; onReady: () => void }) {
-  const { scene } = useGLTF(MUG_URL, false, true);
-  const invalidate = useThree(s => s.invalidate);
-  useLayoutEffect(() => {
-    scene.traverse(o => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      if (m.name === 'Handle_Loop') m.visible = look.handle === 'loop';
-      if (m.name === 'Handle_Strap') m.visible = look.handle === 'strap';
-      if (m.name === 'Saucer') m.visible = look.saucer;
-      const mat = m.material as THREE.MeshStandardMaterial;
-      mat.wireframe = look.wireframe;
-      if (mat.name === 'Glaze') {
-        mat.color.set(look.glaze);
-        mat.roughness = FINISHES[look.finish];
-        mat.metalness = look.lustre;
-      }
-      if (mat.name === 'Interior') {
-        mat.color.set(look.interior === 'match' ? look.glaze : '#f4efe6');
-        mat.roughness = FINISHES[look.finish];
-      }
-    });
-    invalidate();
-  }, [scene, look, invalidate]);
-  useEffect(onReady, [onReady]);
-  return <Fit object={scene} turn={turn} />;
-}
-
-type Panel = { color: string; power: number; pos: [number, number, number]; size: [number, number]; round?: boolean };
-
-// Each lighting preset is a few glowing panels around the model, baked once into an environment map.
-// Hand-rolled instead of drei's <Environment>, which would add HDR/EXR loaders (~45 KB) this page never uses.
-const LIGHTS: Record<Light, { fill: string; panels: Panel[] }> = {
-  studio: { fill: '#565c66', panels: [
-    { color: '#ffffff', power: 1.6, pos: [-3, 2.5, 4], size: [4, 3] },
-    { color: '#ffffff', power: 2.2, pos: [0, 5, -1], size: [8, 4] },
-    { color: '#ffffff', power: 1.4, pos: [-5, 1.5, 1], size: [3, 6] },
-    { color: '#ffffff', power: 1.1, pos: [5, 1.5, 1], size: [3, 6] },
-    { color: '#ffffff', power: 0.6, pos: [0, 1, 6], size: [3, 3], round: true },
-  ] },
-  sunset: { fill: '#2a1d22', panels: [
-    { color: '#ffb26b', power: 3, pos: [-5, 1, 2], size: [6, 3] },
-    { color: '#a46bff', power: 0.9, pos: [5, 2, -2], size: [4, 4] },
-    { color: '#ffe2c4', power: 0.8, pos: [0, 5, 0], size: [6, 6] },
-  ] },
-  night: { fill: '#05080f', panels: [
-    { color: '#7fa8ff', power: 2.4, pos: [4, 2, -4], size: [2, 6] },
-    { color: '#c9d6ff', power: 0.35, pos: [0, 5, 0], size: [6, 6] },
-    { color: '#ffd9a0', power: 1.2, pos: [-3, 1.2, 3], size: [0.8, 0.8], round: true },
-  ] },
+type SceneProps = {
+  view: View; sel: number | null; hover: number | null; flow: boolean; reduced: boolean; wave: number;
+  onSelect: (i: number | null) => void; onHover: (i: number | null) => void; onReady: () => void;
 };
 
-function Lights({ preset }: { preset: Light }) {
+function Scene({ view, sel, hover, flow, reduced, wave, onSelect, onHover, onReady }: SceneProps) {
   const gl = useThree(s => s.gl);
-  const scene = useThree(s => s.scene);
   const invalidate = useThree(s => s.invalidate);
-  useEffect(() => {
-    const { fill, panels } = LIGHTS[preset];
-    const room = new THREE.Scene();
-    room.background = new THREE.Color(fill);
-    for (const p of panels) {
-      const geo = p.round ? new THREE.CircleGeometry(0.5, 32) : new THREE.PlaneGeometry(1, 1);
-      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(p.color).multiplyScalar(p.power), side: THREE.DoubleSide, toneMapped: false });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(...p.pos);
-      mesh.scale.set(p.size[0], p.size[1], 1);
-      mesh.lookAt(0, 0.5, 0); // every panel faces the model
-      room.add(mesh);
+  const controls = useThree(s => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
+  const net = useMemo(networkLayout, []);
+  const floor = useMemo(() => Math.min(...net.map(p => p[1])) - 0.7, [net]);
+  const emb = useMemo(embeddingLayout, []);
+  const morph = useRef(view === 'embedding' ? 1 : 0);
+  const pos = useMemo(() => NODES.map(() => new THREE.Vector3()), []);
+  const nodes = useRef<THREE.InstancedMesh>(null!);
+  const hits = useRef<THREE.InstancedMesh>(null!);
+  const labelGroup = useRef<THREE.Group>(null!);
+  const tmp = useMemo(() => ({ m: new THREE.Matrix4(), c: new THREE.Color(), v: new THREE.Vector3(), q: new THREE.Quaternion() }), []);
+  const focus = sel ?? hover;
+  const lit = useMemo(() => (focus === null ? null : lineage(focus)), [focus]);
+
+  // Edges: one LineSegments for every curved edge, animated entirely in the shader.
+  const edges = useMemo(() => {
+    const n = EDGES.length * SEGMENTS * 2;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    const aT = new Float32Array(n), aLayer = new Float32Array(n), aSeed = new Float32Array(n), aHi = new Float32Array(n), aColor = new Float32Array(n * 3);
+    const r = rng(7);
+    EDGES.forEach((e, k) => {
+      const seed = r();
+      const col = LAYER_COLORS[NODES[e.b].layer];
+      for (let s = 0; s < SEGMENTS; s++) for (let j = 0; j < 2; j++) {
+        const v = (k * SEGMENTS + s) * 2 + j;
+        aT[v] = (s + j) / SEGMENTS;
+        aLayer[v] = NODES[e.a].layer;
+        aSeed[v] = seed;
+        col.toArray(aColor, v * 3);
+      }
+    });
+    g.setAttribute('aT', new THREE.BufferAttribute(aT, 1));
+    g.setAttribute('aLayer', new THREE.BufferAttribute(aLayer, 1));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(aSeed, 1));
+    g.setAttribute('aHi', new THREE.BufferAttribute(aHi, 1));
+    g.setAttribute('aColor', new THREE.BufferAttribute(aColor, 3));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: edgeVert, fragmentShader: edgeFrag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { uTime: { value: 0 }, uFlow: { value: 1 }, uWave: { value: -1 }, uSel: { value: 0 } },
+    });
+    return new THREE.LineSegments(g, m);
+  }, []);
+
+  // Halos: one point sprite per node, additive, for the glow (cheaper than a bloom pass).
+  const halos = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NODES.length * 3), 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(NODES.length * 3), 3));
+    g.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(NODES.length), 1));
+    const m = new THREE.ShaderMaterial({ vertexShader: haloVert, fragmentShader: haloFrag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uScale: { value: 1 } } });
+    return new THREE.Points(g, m);
+  }, []);
+
+  // The data field: points scattered through space that condense into theme clusters in the embedding view.
+  const field = useMemo(() => {
+    const r = rng(42);
+    const themes = Object.keys(THEME_CENTERS) as Theme[];
+    const pos = new Float32Array(PARTICLES * 3), cl = new Float32Array(PARTICLES * 3), col = new Float32Array(PARTICLES * 3), rnd = new Float32Array(PARTICLES);
+    const gauss = () => Math.sqrt(-2 * Math.log(r() + 1e-9)) * Math.cos(2 * Math.PI * r());
+    for (let i = 0; i < PARTICLES; i++) {
+      const u = r() * 2 - 1, th = r() * Math.PI * 2, rad = 3 + Math.cbrt(r()) * 6.5;
+      const s = Math.sqrt(1 - u * u);
+      pos.set([Math.cos(th) * s * rad * 1.3, u * rad * 0.7, Math.sin(th) * s * rad], i * 3);
+      const t = themes[i % themes.length];
+      const c = THEME_CENTERS[t];
+      cl.set([c[0] + gauss() * 0.55, c[1] + gauss() * 0.42, c[2] + gauss() * 0.5], i * 3);
+      THEME_COLORS[t].toArray(col, i * 3);
+      rnd[i] = r();
     }
-    const pmrem = new THREE.PMREMGenerator(gl);
-    const target = pmrem.fromScene(room, 0.04);
-    scene.environment = target.texture;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aCluster', new THREE.BufferAttribute(cl, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aRand', new THREE.BufferAttribute(rnd, 1));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: fieldVert, fragmentShader: fieldFrag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { uMorph: { value: 0 }, uTime: { value: 0 }, uScale: { value: 1 } },
+    });
+    const p = new THREE.Points(g, m);
+    p.frustumCulled = false; // the shader moves points, so the CPU bounding sphere would be wrong
+    return p;
+  }, []);
+
+  // Labels, drawn after the web font is ready so they match the page.
+  const [labels, setLabels] = useState<{ nodes: THREE.Sprite[]; layers: THREE.Sprite[]; themes: THREE.Sprite[] } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+    const ready = fonts ? Promise.race([fonts.load('600 64px Inter').then(() => undefined), new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
+    ready.catch(() => undefined).then(() => {
+      if (!alive) return;
+      setLabels({
+        nodes: NODES.map(n => makeLabel(n.label, { size: n.layer === 3 ? 0.26 : 0.2, color: n.layer === 3 ? '#ffffff' : '#dbe5f7', weight: n.layer === 3 ? 600 : 500 })),
+        layers: LAYERS.map((l, i) => makeLabel(l, { size: 0.17, color: LAYER_HEX[i], caps: true })),
+        themes: (Object.keys(THEMES) as Theme[]).map(t => makeLabel(THEMES[t], { size: 0.3, color: THEME_HEX[t], caps: true })),
+      });
+    });
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => () => {
+    labels && [...labels.nodes, ...labels.layers, ...labels.themes].forEach(s => { s.material.map?.dispose(); s.material.dispose(); });
+  }, [labels]);
+  useEffect(() => { if (labels) { onReady(); invalidate(); } }, [labels, onReady, invalidate]);
+
+  // Which edges belong to the focused node's lineage.
+  useEffect(() => {
+    const hi = edges.geometry.getAttribute('aHi') as THREE.BufferAttribute;
+    EDGES.forEach((e, k) => {
+      const on = lit && lit.has(e.a) && lit.has(e.b) ? 1 : 0;
+      for (let v = 0; v < SEGMENTS * 2; v++) hi.setX(k * SEGMENTS * 2 + v, on);
+    });
+    hi.needsUpdate = true;
+    (edges.material as THREE.ShaderMaterial).uniforms.uSel.value = lit ? 1 : 0;
     invalidate();
-    return () => {
-      scene.environment = null;
-      target.dispose();
-      pmrem.dispose();
-      room.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) { m.geometry.dispose(); (m.material as THREE.Material).dispose(); } });
-    };
-  }, [preset, gl, scene, invalidate]);
-  return null;
-}
+  }, [lit, edges, invalidate]);
 
-// ---------- loading a dropped file ----------
+  useEffect(() => { (edges.material as THREE.ShaderMaterial).uniforms.uFlow.value = flow ? 1 : 0; invalidate(); }, [flow, edges, invalidate]);
+  useEffect(() => () => { [edges, halos, field].forEach(o => { o.geometry.dispose(); (o.material as THREE.Material).dispose(); }); }, [edges, halos, field]);
 
-let loader: GLTFLoader | null = null;
-function gltfLoader() {
-  if (!loader) {
-    loader = new GLTFLoader();
-    const draco = new DRACOLoader();
-    draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.5/'); // fetched only if a file uses Draco
-    loader.setDRACOLoader(draco);
-    const meshopt = MeshoptDecoder as unknown as (() => unknown) | object;
-    loader.setMeshoptDecoder((typeof meshopt === 'function' ? meshopt() : meshopt) as never);
-  }
-  return loader;
-}
+  const target = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+  // Narrow screens see less sideways, so the camera starts further back there.
+  const camera = useThree(s => s.camera);
+  const aspect = useThree(s => s.size.width / Math.max(1, s.size.height));
+  useEffect(() => { camera.position.setLength(aspect < 0.9 ? 15 : aspect < 1.15 ? 12.5 : 10.5); invalidate(); }, [aspect, camera, invalidate]);
+  const last = useRef({ morph: -1, focus: -2 });
 
-async function readGlb(file: File): Promise<THREE.Group> {
-  if (!/\.glb$/i.test(file.name)) throw new Error('That isn’t a .glb file. Export your model as binary glTF (.glb) and drop it again.');
-  if (file.size > MAX_FILE) throw new Error(`That file is ${(file.size / 1048576).toFixed(0)} MB. Keep it under 30 MB so your phone doesn’t have to hold it all in memory.`);
-  const buf = await file.arrayBuffer();
-  const unreadable = new Error('I couldn’t read that model. It may be damaged, or need files that weren’t packed into the .glb.');
-  // Every .glb starts with the bytes "glTF".
-  if (buf.byteLength < 12 || new TextDecoder().decode(new Uint8Array(buf, 0, 4)) !== 'glTF') throw unreadable;
-  const parsed = new Promise<THREE.Group>((resolve, reject) => {
-    try {
-      gltfLoader().parse(buf, '', g => resolve(g.scene), () => reject(unreadable));
-    } catch {
-      reject(unreadable);
+  useFrame((state, dt) => {
+    const t = state.clock.elapsedTime;
+    let busy = false;
+
+    // Morph between the two layouts.
+    const goal = view === 'embedding' ? 1 : 0;
+    if (morph.current !== goal) {
+      morph.current = reduced ? goal : THREE.MathUtils.damp(morph.current, goal, 3.2, Math.min(dt, 0.05));
+      if (Math.abs(morph.current - goal) < 0.002) morph.current = goal;
+      busy = true;
     }
-  });
-  // A Draco file needs a decoder from Google's CDN; if that can't be reached, don't spin forever.
-  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error(
-    'That model took too long to open. If it uses Draco compression, the decoder could not be downloaded; check your connection and try again.')), 20000));
-  return Promise.race([parsed, timeout]);
-}
+    const mt = ease(morph.current);
+    NODES.forEach((_, i) => lerp3(net[i], emb[i], mt, pos[i]));
 
-function dispose(root: THREE.Object3D) {
-  root.traverse(o => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
-    m.geometry.dispose();
-    for (const mat of ([] as THREE.Material[]).concat(m.material)) {
-      for (const v of Object.values(mat)) if (v instanceof THREE.Texture) v.dispose();
-      mat.dispose();
+    // The forward-pass wave: -1 when idle, then 0 → 4 across the layers.
+    const w = wave > 0 ? (performance.now() - wave) / WAVE_MS - 0.3 : -1;
+    const waveOn = w > -0.5 && w < 4.5;
+    if (waveOn) busy = true;
+    const em = edges.material as THREE.ShaderMaterial;
+    em.uniforms.uWave.value = waveOn ? w : -1;
+    em.uniforms.uTime.value = t;
+    const fm = field.material as THREE.ShaderMaterial;
+    fm.uniforms.uTime.value = reduced ? 0 : t;
+    fm.uniforms.uMorph.value = mt;
+    // Point sizes are in CSS pixels at the camera's usual distance (about 10 units).
+    const scale = gl.getPixelRatio() * 10;
+    fm.uniforms.uScale.value = scale;
+    (halos.material as THREE.ShaderMaterial).uniforms.uScale.value = scale;
+
+    // Nodes, hit targets, halos and labels follow the layout.
+    const hp = halos.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const hc = halos.geometry.getAttribute('aColor') as THREE.BufferAttribute;
+    const hs = halos.geometry.getAttribute('aSize') as THREE.BufferAttribute;
+    NODES.forEach((n, i) => {
+      const inLit = !lit || lit.has(i);
+      const flash = waveOn ? Math.exp(-((w - n.layer) ** 2) * 10) : 0;
+      const breathe = reduced ? 0 : Math.sin(t * 1.6 + i) * 0.04;
+      const base = n.layer === 3 ? 0.17 : 0.12;
+      const s = base * (inLit ? 1 : 0.7) * (i === focus ? 1.35 : 1) * (1 + flash * 0.6 + breathe);
+      tmp.m.compose(pos[i], tmp.q, tmp.v.setScalar(s));
+      nodes.current.setMatrixAt(i, tmp.m);
+      tmp.m.compose(pos[i], tmp.q, tmp.v.setScalar(0.32));
+      hits.current.setMatrixAt(i, tmp.m);
+      tmp.c.copy(LAYER_COLORS[n.layer]).lerp(THEME_COLORS[n.theme], mt).multiplyScalar(inLit ? 1 + flash : 0.3);
+      nodes.current.setColorAt(i, tmp.c);
+      hp.setXYZ(i, pos[i].x, pos[i].y, pos[i].z);
+      hc.setXYZ(i, tmp.c.r, tmp.c.g, tmp.c.b);
+      hs.setX(i, (n.layer === 3 ? 44 : 32) * (inLit ? 1 : 0.5) * (i === focus ? 1.5 : 1) * (1 + flash * 1.2));
+      if (labels) {
+        const l = labels.nodes[i];
+        l.position.set(pos[i].x, pos[i].y + s + 0.06, pos[i].z);
+        l.material.opacity = !inLit ? 0.12 : (n.layer === 3 || i === focus || lit) ? 1 : (n.layer === 1 ? 1 - mt * 0.35 : 0.8 - mt * 0.45);
+      }
+    });
+    nodes.current.instanceMatrix.needsUpdate = true;
+    if (nodes.current.instanceColor) nodes.current.instanceColor.needsUpdate = true;
+    hits.current.instanceMatrix.needsUpdate = true;
+    hits.current.computeBoundingSphere();
+    hp.needsUpdate = hc.needsUpdate = hs.needsUpdate = true;
+    if (labels) {
+      labels.layers.forEach((l, i) => { l.position.set((i - 1.5) * 2.5, floor, 0.4); l.material.opacity = 1 - mt; l.visible = mt < 0.98; });
+      (Object.keys(THEMES) as Theme[]).forEach((th, i) => {
+        const c = THEME_CENTERS[th];
+        const l = labels.themes[i];
+        l.position.set(c[0], c[1] + 0.95, c[2]);
+        l.material.opacity = mt; l.visible = mt > 0.02;
+      });
     }
-  });
-}
 
-function materialsOf(root: THREE.Object3D): THREE.MeshStandardMaterial[] {
-  const seen = new Set<THREE.Material>();
-  root.traverse(o => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh) for (const mat of ([] as THREE.Material[]).concat(m.material)) seen.add(mat);
-  });
-  return [...seen].filter((m): m is THREE.MeshStandardMaterial => 'color' in m);
-}
-
-// ---------- the viewer ----------
-
-export default function Viewer({ reducedMotion, onReady, cover }: { reducedMotion: boolean; onReady: () => void; cover?: ReactNode }) {
-  const [look, setLook] = useState<MugLook>({ glaze: GLAZES[0].hex, finish: 'gloss', lustre: 0, interior: 'cream', handle: 'loop', saucer: true, wireframe: false });
-  const [light, setLight] = useState<Light>('studio');
-  const [spin, setSpin] = useState(reducedMotion ? 0 : 1.2);
-  const [turn, setTurn] = useState(0);
-  const [dpr, setDpr] = useState(() => Math.min(window.devicePixelRatio || 1, 1.75));
-  const [inView, setInView] = useState(true);
-  const [custom, setCustom] = useState<Custom | null>(null);
-  const [pick, setPick] = useState(0);
-  const [version, bump] = useState(0);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [showFps, setShowFps] = useState(() => new URLSearchParams(location.search).has('fps'));
-  const [fps, setFps] = useState<number | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const stage = useRef<HTMLDivElement>(null);
-  const file = useRef<HTMLInputElement>(null);
-
-  // Stop rendering entirely while the viewer is scrolled out of sight.
-  useEffect(() => {
-    const el = stage.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: '100px' });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => () => { if (custom) dispose(custom.scene); }, [custom]);
-
-  const set = <K extends keyof MugLook>(k: K, v: MugLook[K]) => setLook(l => ({ ...l, [k]: v }));
-
-  const load = useCallback(async (f: File | undefined) => {
-    if (!f) return;
-    setError(''); setBusy(true);
-    try {
-      const scene = await readGlb(f);
-      setCustom({ name: f.name, bytes: f.size, scene });
-      setPick(0); setTurn(0);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
+    // Curved edges between the current node positions (only rebuilt while something moves).
+    const key = { morph: morph.current, focus: focus ?? -1 };
+    if (busy || last.current.morph !== key.morph || !edges.userData.built) {
+      const p = edges.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const a = new THREE.Vector3(), b = new THREE.Vector3(), c1 = new THREE.Vector3(), c2 = new THREE.Vector3(), q = new THREE.Vector3();
+      const curve = new THREE.CubicBezierCurve3(a, c1, c2, b);
+      EDGES.forEach((e, k) => {
+        a.copy(pos[e.a]); b.copy(pos[e.b]);
+        const dx = (b.x - a.x) * 0.5, lift = 0.35 * mt;
+        c1.set(a.x + dx, a.y + lift, a.z + lift); c2.set(b.x - dx, b.y + lift, b.z - lift);
+        for (let s = 0; s < SEGMENTS; s++) for (let j = 0; j < 2; j++) {
+          curve.getPoint((s + j) / SEGMENTS, q);
+          p.setXYZ((k * SEGMENTS + s) * 2 + j, q.x, q.y, q.z);
+        }
+      });
+      p.needsUpdate = true;
+      edges.geometry.computeBoundingSphere();
+      edges.userData.built = true;
     }
-  }, []);
+    last.current = key;
 
-  const mats = useMemo(() => (custom ? materialsOf(custom.scene) : []), [custom]);
-  const mat = mats[pick];
-  const editMat = (fn: (m: THREE.MeshStandardMaterial) => void) => { if (mat) { fn(mat); mat.needsUpdate = true; bump(n => n + 1); } };
-  const [customWire, setCustomWire] = useState(false);
-  useEffect(() => {
-    if (!custom) return;
-    for (const m of materialsOf(custom.scene)) { (m as THREE.MeshStandardMaterial).wireframe = customWire; }
-    bump(n => n + 1);
-  }, [custom, customWire]);
+    // Ease the camera's aim toward the focused node (only a little on narrow screens, so the whole network stays in view).
+    if (controls) {
+      const goalT = focus !== null && sel !== null ? tmp.v.copy(pos[focus]).multiplyScalar(aspect < 1.15 ? 0 : 0.55) : target.set(0, 0, 0);
+      if (controls.target.distanceTo(goalT) > 0.003) {
+        if (reduced) controls.target.copy(goalT); else controls.target.lerp(goalT, Math.min(1, dt * 3));
+        controls.update();
+        busy = true;
+      }
+    }
+    if (busy) invalidate();
+  });
 
-  const onDrop = (e: DragEvent) => { e.preventDefault(); setDragging(false); load(e.dataTransfer.files[0]); };
-  const glazeName = GLAZES.find(g => g.hex === look.glaze)?.name ?? 'custom';
-  const label = custom
-    ? `3D view of ${custom.name}. Drag to turn it, pinch or scroll to zoom.`
-    : `3D view of a ceramic mug in ${glazeName} glaze, ${look.finish} finish, ${look.handle} handle${look.saucer ? ', on a saucer' : ''}. Drag to turn it, pinch or scroll to zoom.`;
-  const shadowKey = custom ? custom.name + custom.bytes : `${look.handle}-${look.saucer}`;
+  const over = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); if (e.instanceId !== undefined) { onHover(e.instanceId); document.body.style.cursor = 'pointer'; } };
+  const out = () => { onHover(null); document.body.style.cursor = ''; };
+  const click = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    if (e.delta > 6 || e.instanceId === undefined) return; // a drag, not a tap
+    onSelect(e.instanceId === sel ? null : e.instanceId);
+  };
+  useEffect(() => () => { document.body.style.cursor = ''; }, []);
 
   return (
-    <div className="viewer">
-      <div
-        ref={stage}
-        className={'stage stage--' + light + (dragging ? ' is-drop' : '')}
-        onDragOver={e => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-      >
-        <Canvas
-          role="img"
-          aria-label={label}
-          frameloop={inView ? 'demand' : 'never'}
-          dpr={dpr}
-          camera={{ position: [1.9, 1.35, 2.5], fov: 35, near: 0.1, far: 50 }}
-          gl={{ antialias: true, powerPreference: 'low-power' }}
-        >
-          <PerformanceMonitor onDecline={() => setDpr(1)} />
-          <Kick deps={[version, light, spin]} />
-          {showFps && <FpsProbe onSample={setFps} />}
-          <ambientLight intensity={0.15} />
-          <Lights preset={light} />
-          <Suspense fallback={null}>
-            {custom ? <Fit object={custom.scene} turn={turn} /> : <Mug look={look} turn={turn} onReady={onReady} />}
-            <ContactShadows key={shadowKey + light} position={[0, 0.001, 0]} scale={4} blur={2.4} far={1.4} resolution={512} frames={1}
-              opacity={light === 'night' ? 0.7 : 0.45} color={light === 'sunset' ? '#5a2e1a' : '#0b1424'} />
-          </Suspense>
-          <OrbitControls makeDefault target={[0, 0.5, 0]} enablePan={false} enableDamping={!reducedMotion}
-            minDistance={1.6} maxDistance={6} maxPolarAngle={Math.PI / 2.05} autoRotate={spin > 0} autoRotateSpeed={spin} />
-        </Canvas>
-        {cover}
-        {showFps && <div className="fps" aria-live="off">{fps === null ? '…' : `${fps} fps`}{fps === 0 ? ' (idle, not rendering)' : ''}</div>}
-        <button type="button" className="btn-small stage-upload" onClick={() => file.current?.click()}><Upload size={15} /> {custom ? 'Load another .glb' : 'Load your own .glb'}</button>
-        <div className="stage-tools">
-          <button type="button" className="icon-btn" onClick={() => setTurn(t => t - Math.PI / 6)} aria-label="Turn left"><RotateCcw size={16} /></button>
-          <button type="button" className="icon-btn" onClick={() => setTurn(t => t + Math.PI / 6)} aria-label="Turn right"><RotateCw size={16} /></button>
-        </div>
-        {dragging && <div className="drop-hint" aria-hidden="true">Drop your .glb to load it here</div>}
-        {busy && <div className="drop-hint" role="status">Loading your model…</div>}
-      </div>
-
-      <form className="panel" onSubmit={e => e.preventDefault()} aria-label="Configure the model">
-        {!custom ? (
-          <>
-            <fieldset>
-              <legend>Glaze</legend>
-              <div className="swatches">
-                {GLAZES.map(g => (
-                  <label key={g.hex} className="swatch" title={g.name}>
-                    <input type="radio" name="glaze" value={g.hex} checked={look.glaze === g.hex} onChange={() => set('glaze', g.hex)} />
-                    <span style={{ background: g.hex }} /><span className="sr-only">{g.name}</span>
-                  </label>
-                ))}
-                <label className="swatch swatch--custom" title="Any colour">
-                  <input type="color" value={look.glaze} onChange={e => set('glaze', e.target.value)} aria-label="Pick any glaze colour" />
-                </label>
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend>Finish</legend>
-              <Seg name="finish" value={look.finish} options={[['gloss', 'Gloss'], ['satin', 'Satin'], ['matte', 'Matte']]} onChange={v => set('finish', v as Finish)} />
-            </fieldset>
-            <Range label="Metallic lustre" min={0} max={1} step={0.05} value={look.lustre} onChange={v => set('lustre', v)} format={v => Math.round(v * 100) + '%'} />
-            <fieldset>
-              <legend>Handle</legend>
-              <Seg name="handle" value={look.handle} options={[['loop', 'Loop'], ['strap', 'Strap']]} onChange={v => set('handle', v as Handle)} />
-            </fieldset>
-            <fieldset>
-              <legend>Inside</legend>
-              <Seg name="interior" value={look.interior} options={[['cream', 'Cream'], ['match', 'Same glaze']]} onChange={v => set('interior', v as MugLook['interior'])} />
-            </fieldset>
-            <div className="checks">
-              <label><input type="checkbox" checked={look.saucer} onChange={e => set('saucer', e.target.checked)} /> Saucer</label>
-              <label><input type="checkbox" checked={look.wireframe} onChange={e => set('wireframe', e.target.checked)} /> Wireframe</label>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="panel-file"><strong>{custom.name}</strong> · {(custom.bytes / 1024).toFixed(0)} KB · {mats.length} material{mats.length === 1 ? '' : 's'}</p>
-            {mat ? (
-              <>
-                <label className="field">
-                  <span>Material</span>
-                  <select value={pick} onChange={e => setPick(Number(e.target.value))}>
-                    {mats.map((m, i) => <option key={m.uuid} value={i}>{m.name || `Material ${i + 1}`}</option>)}
-                  </select>
-                </label>
-                <label className="field field--row">
-                  <span>Colour</span>
-                  <input type="color" value={'#' + mat.color.getHexString()} onChange={(e: ChangeEvent<HTMLInputElement>) => editMat(m => m.color.set(e.target.value))} />
-                </label>
-                {'metalness' in mat && <Range label="Metalness" min={0} max={1} step={0.05} value={mat.metalness} onChange={v => editMat(m => { m.metalness = v; })} format={v => v.toFixed(2)} />}
-                {'roughness' in mat && <Range label="Roughness" min={0} max={1} step={0.05} value={mat.roughness} onChange={v => editMat(m => { m.roughness = v; })} format={v => v.toFixed(2)} />}
-              </>
-            ) : <p className="panel-file">This model has no materials I can edit.</p>}
-            <div className="checks"><label><input type="checkbox" checked={customWire} onChange={e => setCustomWire(e.target.checked)} /> Wireframe</label></div>
-          </>
-        )}
-
-        <fieldset>
-          <legend>Lighting</legend>
-          <Seg name="light" value={light} options={[['studio', 'Studio'], ['sunset', 'Sunset'], ['night', 'Night']]} onChange={v => setLight(v as Light)} />
-        </fieldset>
-        <Range label="Auto-rotate" min={0} max={4} step={0.2} value={spin} onChange={setSpin} format={v => (v === 0 ? 'Off' : v.toFixed(1) + '×')} />
-        <div className="checks"><label><input type="checkbox" checked={showFps} onChange={e => { setShowFps(e.target.checked); setFps(null); }} /> Show frame rate</label></div>
-
-        <div className="panel-file-actions">
-          <input ref={file} type="file" accept=".glb,model/gltf-binary" hidden onChange={e => { load(e.target.files?.[0]); e.target.value = ''; }} />
-          {custom && <button type="button" className="btn-small btn-small--ghost" onClick={() => { setCustom(null); setError(''); }}><Undo2 size={15} /> Back to the mug</button>}
-          <p className="hint">Load a .glb with the button on the stage, or drag one onto it. It stays on your device; nothing is uploaded.</p>
-          {error && <p className="panel-error" role="alert">{error}</p>}
-        </div>
-      </form>
-    </div>
+    <>
+      <primitive object={field} />
+      <primitive object={edges} />
+      <primitive object={halos} />
+      <instancedMesh ref={nodes} args={[undefined, undefined, NODES.length]} frustumCulled={false}>
+        <icosahedronGeometry args={[1, 3]} />
+        <meshBasicMaterial toneMapped={false} />
+      </instancedMesh>
+      <instancedMesh ref={hits} args={[undefined, undefined, NODES.length]} visible={false} onPointerOver={over} onPointerOut={out} onClick={click}>
+        <icosahedronGeometry args={[1, 1]} />
+        <meshBasicMaterial />
+      </instancedMesh>
+      {labels && <group ref={labelGroup}>{[...labels.nodes, ...labels.layers, ...labels.themes].map(s => <primitive key={s.uuid} object={s} />)}</group>}
+    </>
   );
 }
 
-/** Counts frames actually rendered each second. Idle shows 0 because the canvas renders on demand. */
+// ---------- frame-rate probe ----------
+
 function FpsProbe({ onSample }: { onSample: (n: number) => void }) {
   const frames = useRef(0);
   useFrame(() => { frames.current++; });
@@ -386,12 +395,127 @@ function FpsProbe({ onSample }: { onSample: (n: number) => void }) {
   return null;
 }
 
-/** Asks for one new frame when something outside the scene graph changed (the canvas renders on demand). */
 function Kick({ deps }: { deps: unknown[] }) {
   const invalidate = useThree(s => s.invalidate);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { invalidate(); }, deps);
   return null;
+}
+
+// ---------- the viewer: canvas + controls ----------
+
+export default function Viewer({ reducedMotion, onReady, cover }: { reducedMotion: boolean; onReady: () => void; cover?: ReactNode }) {
+  const [view, setView] = useState<View>('network');
+  const [sel, setSel] = useState<number | null>(null);
+  const [hover, setHover] = useState<number | null>(null);
+  const [flow, setFlow] = useState(!reducedMotion);
+  const [spin, setSpin] = useState(reducedMotion ? 0 : 0.5);
+  const [wave, setWave] = useState(0);
+  const [dpr, setDpr] = useState(() => Math.min(window.devicePixelRatio || 1, 1.5));
+  const [inView, setInView] = useState(true);
+  const [showFps, setShowFps] = useState(() => new URLSearchParams(location.search).has('fps'));
+  const [fps, setFps] = useState<number | null>(null);
+  const stage = useRef<HTMLDivElement>(null);
+
+  // Stop rendering entirely while the viewer is scrolled out of sight.
+  useEffect(() => {
+    const el = stage.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: '100px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const focus = sel ?? hover;
+  const node = focus !== null ? NODES[focus] : null;
+  const parents = node ? (node.from ?? []).map(id => NODES.find(n => n.id === id)!.label) : [];
+  const children = node ? NODES.filter(n => n.from?.includes(node.id)).map(n => n.label) : [];
+  const animating = flow || spin > 0;
+  const onHover = useCallback((i: number | null) => setHover(i), []);
+  const counts = LAYERS.map((_, l) => NODES.filter(n => n.layer === l).length);
+  const label = `3D network of my work: ${counts[0]} kinds of data flow through ${counts[1]} skills and ${counts[2]} AI and data capabilities into ${counts[3]} projects.`
+    + (view === 'embedding' ? ' Shown as an embedding: nodes grouped by theme.' : '')
+    + (node ? ` Selected: ${node.label}.` : '') + ' The same network is listed as a table further down the page.';
+
+  return (
+    <div className="viewer">
+      <div className="stage-col">
+      <div ref={stage} className="stage stage--net">
+        <Canvas
+          role="img"
+          aria-label={label}
+          frameloop={!inView ? 'never' : animating ? 'always' : 'demand'}
+          dpr={dpr}
+          camera={{ position: [0.6, 1.0, 10.5], fov: 42, near: 0.1, far: 60 }}
+          gl={{ antialias: true, powerPreference: 'low-power', alpha: true }}
+          onPointerMissed={() => setSel(null)}
+        >
+          <PerformanceMonitor onDecline={() => setDpr(1)} />
+          <Kick deps={[view, sel, flow, spin, wave]} />
+          {showFps && <FpsProbe onSample={setFps} />}
+          <Scene view={view} sel={sel} hover={hover} flow={flow} reduced={reducedMotion} wave={wave}
+            onSelect={setSel} onHover={onHover} onReady={onReady} />
+          <OrbitControls makeDefault enablePan={false} enableDamping={!reducedMotion} minDistance={4.5} maxDistance={15}
+            autoRotate={spin > 0 && sel === null} autoRotateSpeed={spin} />
+        </Canvas>
+        {cover}
+        {showFps && <div className="fps" aria-live="off">{fps === null ? '…' : `${fps} fps`}{fps === 0 ? ' (idle, not rendering)' : ''}</div>}
+        <div className="legend" aria-hidden="true">
+          {view === 'network'
+            ? LAYERS.map((l, i) => <span key={l}><i style={{ background: LAYER_HEX[i] }} />{l}</span>)
+            : (Object.keys(THEMES) as Theme[]).map(t => <span key={t}><i style={{ background: THEME_HEX[t] }} />{THEMES[t]}</span>)}
+        </div>
+      </div>
+        {node ? (
+          <div className="node-card" role="status">
+            <p className="node-kind">{LAYERS[node.layer]} · {THEMES[node.theme]}</p>
+            <h3>{node.label}</h3>
+            <p>{node.desc}</p>
+            {parents.length > 0 && <p className="node-rel"><span>Built from</span> {parents.join(' · ')}</p>}
+            {children.length > 0 && <p className="node-rel"><span>Feeds</span> {children.join(' · ')}</p>}
+            <div className="node-actions">
+              {node.href && <a className="btn-small" href={node.href}>Open the project <ArrowUpRight size={15} /></a>}
+              {sel !== null && <button type="button" className="icon-btn" onClick={() => setSel(null)} aria-label="Clear the selection"><X size={16} /></button>}
+            </div>
+          </div>
+        ) : (
+          <p className="stage-hint">Tap a node to light up what it’s built from and what it feeds.</p>
+        )}
+      </div>
+
+      <form className="panel" onSubmit={e => e.preventDefault()} aria-label="Explore the network">
+        <fieldset>
+          <legend>View</legend>
+          <Seg name="view" value={view} options={[['network', 'Network'], ['embedding', 'Embedding']]} onChange={v => setView(v as View)} />
+        </fieldset>
+        <button type="button" className="btn-small" onClick={() => setWave(performance.now())}><Zap size={15} /> Run a forward pass</button>
+        <fieldset>
+          <legend>Projects</legend>
+          <div className="chips">
+            {NODES.map((n, i) => n.layer === 3 && (
+              <button key={n.id} type="button" className="chip" aria-pressed={sel === i} onClick={() => setSel(sel === i ? null : i)}>{n.label}</button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Skills</legend>
+          <div className="chips">
+            {NODES.map((n, i) => n.layer === 1 && (
+              <button key={n.id} type="button" className="chip" aria-pressed={sel === i} onClick={() => setSel(sel === i ? null : i)}>{n.label}</button>
+            ))}
+          </div>
+        </fieldset>
+        <div className="checks">
+          <label><input type="checkbox" checked={flow} onChange={e => setFlow(e.target.checked)} /> Data flow</label>
+          <label><input type="checkbox" checked={showFps} onChange={e => { setShowFps(e.target.checked); setFps(null); }} /> Show frame rate</label>
+        </div>
+        <Range label="Auto-rotate" min={0} max={2} step={0.1} value={spin} onChange={setSpin} format={v => (v === 0 ? 'Off' : v.toFixed(1) + '×')} />
+        <p className="hint">{view === 'network'
+          ? <><Network size={13} /> Left to right: data in, skills, capabilities, projects. Each moving light is a “built with” link.</>
+          : <><Sparkles size={13} /> The same nodes regrouped by theme, the way an embedding puts similar things close together.</>}</p>
+      </form>
+    </div>
+  );
 }
 
 function Seg({ name, value, options, onChange }: { name: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
@@ -405,7 +529,7 @@ function Seg({ name, value, options, onChange }: { name: string; value: string; 
 }
 
 function Range({ label, value, onChange, format, ...rest }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; format: (v: number) => string }) {
-  const id = useId();
+  const id = `range-${label.replace(/\W+/g, '-').toLowerCase()}`;
   return (
     <div className="field">
       <span><label htmlFor={id}>{label}</label><output htmlFor={id} aria-hidden="true">{format(value)}</output></span>
@@ -413,5 +537,3 @@ function Range({ label, value, onChange, format, ...rest }: { label: string; val
     </div>
   );
 }
-
-useGLTF.preload(MUG_URL, false, true);

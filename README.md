@@ -134,4 +134,4 @@ What each deployed file does:
 
 ## FE-AA2 — Your first 3D experience on the web
 
-A ceramic mug configurator in React Three Fiber at [/3d/](https://ichrak-matrouh.vercel.app/3d/): glaze, finish, handle, saucer and lighting, plus a drag-and-drop viewer for any `.glb`. Lazy-loaded, with a still-picture fallback. Full write-up, perf note and what I'd add next: [3d/README.md](3d/README.md).
+My work in AI and data science as a 3D neural network, in React Three Fiber with custom shaders, at [/3d/](https://ichrak-matrouh.vercel.app/3d/): tap a project to light up what it is built from, run a forward pass, or fold it into an embedding view. Lazy-loaded, with a still-picture fallback. Full write-up, perf note and what I'd add next: [3d/README.md](3d/README.md).

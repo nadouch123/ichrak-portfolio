@@ -35,7 +35,7 @@ describe('3D gate: who gets the viewer straight away', () => {
 describe('3D stage fallback', () => {
   it('shows the still picture and downloads no 3D code until the visitor asks', async () => {
     render(<Stage initial={{ mode: 'ask', reason: 'reduced-motion' }} />);
-    expect(screen.getByRole('img', { name: /ceramic mug/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /neural network/i })).toBeInTheDocument();
     expect(screen.getByText(/asks for reduced motion/i)).toBeInTheDocument();
     expect(chunk.imported).toBe(false);
 
@@ -53,5 +53,20 @@ describe('3D stage fallback', () => {
     render(<Stage initial={{ mode: 'off', reason: 'no-webgl' }} />);
     expect(screen.getByText(/WebGL turned off/i)).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+});
+
+import { EDGES, NODES, lineage } from '../3d/graph.ts';
+
+describe('the network data', () => {
+  it('links every node to things that exist, one layer at a time', () => {
+    for (const e of EDGES) expect(NODES[e.b].layer).toBeGreaterThan(NODES[e.a].layer);
+    for (const n of NODES.filter(n => n.layer > 0)) expect(n.from?.length).toBeGreaterThan(0);
+  });
+  it('lights up a project’s whole lineage, back to the data it starts from', () => {
+    const coach = NODES.findIndex(n => n.id === 'coach');
+    const lit = [...lineage(coach)].map(i => NODES[i].id);
+    expect(lit).toEqual(expect.arrayContaining(['coach', 'tools', 'aiml', 'notes']));
+    expect(lit).not.toContain('bracelet');
   });
 });
