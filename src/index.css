@@ -49,6 +49,10 @@ h2{font-size:clamp(38px,5vw,62px);line-height:1.02}
 .hero{position:relative;overflow:hidden;background:radial-gradient(1200px 600px at 85% -10%,#1d3a6b 0%,transparent 60%),radial-gradient(800px 500px at -10% 110%,#16305a 0%,transparent 55%),var(--ink);color:#fff;padding:168px 0 72px;isolation:isolate}
 .hero::after{content:'';position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%)}
 .hero-glow{position:absolute;width:520px;height:520px;right:-120px;top:80px;border-radius:50%;background:radial-gradient(circle,rgba(156,194,255,.22),transparent 65%);filter:blur(10px);z-index:-1;animation:float 14s ease-in-out infinite}
+/* FE-AA3: shader canvas fades in over the CSS gradient, which is also the reduced-motion / no-WebGL fallback. */
+.hero-shader{position:absolute;inset:0;width:100%;height:100%;z-index:-2;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+.hero-shader.on{opacity:1}
+.hero-shader.on~.hero-glow{display:none}
 @keyframes float{50%{transform:translate(-40px,30px)}}
 .hero-grid{display:grid;grid-template-columns:1.45fr .8fr;gap:64px;align-items:end}
 .hero h1{font-size:clamp(52px,8vw,108px);line-height:.98;max-width:860px}

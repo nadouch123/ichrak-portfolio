@@ -6,6 +6,18 @@ import { LINKS, bookingHref } from './links.js';
 import ContactForm from './ContactForm.jsx';
 import { FlyrankBadge } from './FlyrankBadge.jsx';
 
+// FE-AA3: the shader loads after the page has painted, so it never delays the headline (LCP).
+function HeroShader() {
+  const ref = useRef(null);
+  useEffect(() => {
+    let stop = () => {}, dead = false;
+    const go = () => import('./hero/shader.js').then(m => { if (!dead) stop = m.startHeroShader(ref.current); });
+    const id = 'requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 2000 }) : setTimeout(go, 1200);
+    return () => { dead = true; stop(); (window.cancelIdleCallback || clearTimeout)(id); };
+  }, []);
+  return <canvas ref={ref} className="hero-shader" aria-hidden="true" />;
+}
+
 const NAV = ['work', 'about', 'writing', 'experience', 'contact'];
 
 const profileLinks = [
@@ -101,6 +113,7 @@ function App() {
 
       <main id="main">
         <section id="top" className="hero">
+          <HeroShader />
           <div className="hero-glow" aria-hidden="true" />
           <div className="wrap hero-grid">
             <div className="hero-copy">
