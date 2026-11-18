@@ -81,7 +81,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
+            <img src="/logo-mark-80.webp" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -96,7 +96,7 @@ export default function App() {
             <h1>Weekly Review <em>Coach, live.</em></h1>
             <p className="hero-lead">The working version of my FL-06 agent. It reads my own notes through tools, checks my live portfolio, reviews my week, quizzes me, and suggests next week’s plan.</p>
             <div className="build-ctas">
-              <a className="btn btn-light" href={AGENT_URL} target="_blank" rel="noreferrer">Open the live agent <ArrowUpRight size={17} /></a>
+              <a className="btn btn-light" href={AGENT_URL} target="_blank" rel="noreferrer">Open the live agent <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
               <a className="ghost-link" href="/agent-spec/">Read the original spec</a>
               <a className="ghost-link" href="/tool-ui/">FE-07: tool definitions and README</a>
               <a className="ghost-link" href="/edge-cases/">FE-08: error and empty states</a>
@@ -202,7 +202,6 @@ export default function App() {
             <p className="note">Each rule is written into the agent’s system prompt. I run all six against the live agent and record the results in the build log, with a 6/6 target.</p>
           </div>
         </section>
-      </main>
 
       <section className="contact spec-end">
         <div className="wrap end-grid">
@@ -210,10 +209,11 @@ export default function App() {
             <p className="eyebrow light">Try it</p>
             <h2>Ask it for a <em>weekly review.</em></h2>
           </div>
-          <a className="btn btn-light" href={AGENT_URL} target="_blank" rel="noreferrer">Open the live agent <ArrowUpRight size={17} /></a>
+          <a className="btn btn-light" href={AGENT_URL} target="_blank" rel="noreferrer">Open the live agent <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
         </div>
         <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>Checkpoint 1 · Build the agent</span></footer>
       </section>
+      </main>
     </div>
   );
 }

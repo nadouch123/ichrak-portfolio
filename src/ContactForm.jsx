@@ -67,10 +67,11 @@ export default function ContactForm({ fallbackEmail }) {
   if (status === 'sent') {
     return (
       <div className="contact-card form-done" role="status">
-        <CheckCircle2 size={28} />
-        <h3>Message sent.</h3>
+        <CheckCircle2 size={28} aria-hidden="true" />
+        {/* FE-10: the form (and the focused button) is replaced by this card, so focus moves to its heading. */}
+        <h3 tabIndex={-1} ref={(el) => el?.focus()}>Message sent.</h3>
         <p>Thank you. It's on its way to my inbox, and I'll reply by email, usually within two days.</p>
-        <button type="button" className="link-btn" onClick={() => setStatus('idle')}>Send another message</button>
+        <button type="button" className="link-btn" onClick={() => { setStatus('idle'); requestAnimationFrame(() => formRef.current?.querySelector('input')?.focus()); }}>Send another message</button>
       </div>
     );
   }
@@ -113,7 +114,8 @@ export default function ContactForm({ fallbackEmail }) {
           <AlertCircle size={18} /> <span>{error} {fallbackEmail && <>Or write to <a href={`mailto:${fallbackEmail}`}>{fallbackEmail}</a>.</>}</span>
         </p>
       )}
-      <button className="btn btn-light form-submit" type="submit" disabled={sending}>
+      {/* FE-10: aria-disabled, not disabled, while sending: a disabled button drops keyboard focus to <body>. */}
+      <button className="btn btn-light form-submit" type="submit" aria-disabled={sending || undefined}>
         {sending ? <><Loader2 size={18} className="spin" /> Sending…</> : <><Send size={18} /> Send message</>}
       </button>
     </form>

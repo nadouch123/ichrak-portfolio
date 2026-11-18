@@ -18,7 +18,7 @@ class CatchWebGL extends Component<{ fallback: ReactNode; children: ReactNode },
 function Poster({ children }: { children?: ReactNode }) {
   return (
     <figure className="poster">
-      <img src={POSTER} width={1230} height={992} alt="A glowing 3D neural network on a dark blue background: columns of nodes for data, skills, AI and data capabilities, and projects, joined by curved lines of light." />
+      <img src={POSTER} width={1230} height={992} alt="A glowing 3D neural network: columns of nodes for data, skills, AI capabilities and projects, joined by curved lines of light." />
       {children}
     </figure>
   );

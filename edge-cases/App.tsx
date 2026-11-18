@@ -65,7 +65,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
+            <img src="/logo-mark-80.webp" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -80,7 +80,7 @@ export default function App() {
             <h1>Break it on purpose, <em>recover on screen.</em></h1>
             <p className="hero-lead">My Weekly Review Coach, sabotaged ten ways. Every failure becomes a designed state that says what happened, what to do now, and retries safely.</p>
             <div className="build-ctas">
-              <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /></a>
+              <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
               <a className="ghost-link" href="#sabotage">Sabotage checklist</a>
               <a className="ghost-link" href="#code">Failure code</a>
             </div>
@@ -162,16 +162,15 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">07 — Failure code and README</p><h2><em>lib/failures.ts</em></h2></div><span className="head-icon"><FileCode2 size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>lib/failures.ts</code><span>Problem codes + sabotage middleware</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/failures.ts.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
+              <div className="code-head"><code>lib/failures.ts</code><span>Problem codes + sabotage middleware</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/failures.ts.txt" target="_blank" rel="noreferrer">View on GitHub<span className="sr-only"> (opens in a new tab)</span></a></div>
               <pre tabIndex={0} aria-label="lib/failures.ts source">{failuresSrc}</pre>
             </div>
             <div className="code-card" style={{ marginTop: 24 }}>
-              <div className="code-head"><code>README.md</code><span><BookOpen size={14} /> FE-08 section</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/README-fe08.md.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
+              <div className="code-head"><code>README.md</code><span><BookOpen size={14} /> FE-08 section</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/edge-cases/source/README-fe08.md.txt" target="_blank" rel="noreferrer">View on GitHub<span className="sr-only"> (opens in a new tab)</span></a></div>
               <pre tabIndex={0} aria-label="README FE-08 section">{readmeSrc}</pre>
             </div>
           </div>
         </section>
-      </main>
 
       <section className="contact spec-end">
         <div className="wrap end-grid">
@@ -179,10 +178,11 @@ export default function App() {
             <p className="eyebrow light">Try it</p>
             <h2>Pick a sabotage, <em>watch it recover.</em></h2>
           </div>
-          <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /></a>
+          <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
         </div>
         <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FE-08 · Error states, empty states, edge cases</span></footer>
       </section>
+      </main>
     </div>
   );
 }

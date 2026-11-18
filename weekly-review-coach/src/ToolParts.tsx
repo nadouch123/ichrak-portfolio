@@ -46,7 +46,7 @@ export function ToolPartView({ part, live = true, busy = false, onApprovePlan, o
   const cls = `tool tool--${state}${waitingOnUser ? ' tool--waiting' : ''}`;
 
   return (
-    <section className={cls} aria-live="polite" aria-label={`${meta.label}: ${STATE_LABEL[state] ?? state}`}>
+    <section className={cls} aria-label={`${meta.label}: ${STATE_LABEL[state] ?? state}`}>
       <header className="tool__head">
         <span className="tool__icon" aria-hidden="true">{meta.icon}</span>
         <span className="tool__name">{meta.label}</span>
