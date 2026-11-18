@@ -6,8 +6,8 @@ gradient descent rolling toward the lowest point, and the lines glow near it.
 
 Uniforms: `u_time`, `u_resolution`, `u_mouse` (all three). Shader blocks, in order:
 1. value noise, 2. fbm (4 octaves), 3. aspect-correct uv, 4. height field + cursor well,
-5. contour lines with `fwidth` for 1px edges, 6. site palette (ink + sky),
-7. readability scrim behind the text, 8. film grain.
+5. contour lines (crisp core + soft glow halo), 6. aurora palette (sky, violet, teal) + nebula glows,
+7. readability scrim + vignette, 8. film grain.
 
 **Fallback one-liner:** the hero's existing CSS gradient is always underneath; the shader
 loads only after first paint (idle), caps DPR at 1.5, pauses when the tab is hidden or the

@@ -38,23 +38,41 @@ void main(){
   float d = distance(q, m);
   h -= 0.35 * exp(-d * d * 6.0);
 
-  // 5. Contour lines: fract() makes repeating bands of height, fwidth() keeps them 1px sharp.
+  // 5. Contour lines: fract() makes repeating bands of height; edge is 0 exactly on a line.
+  //    Two widths: a crisp 1px core plus a soft halo, so each line glows instead of looking drawn.
   float bands = h * 14.0;
-  float edge = 0.5 - abs(fract(bands) - 0.5);   // 0 exactly on a contour
-  float line = 1.0 - smoothstep(0.0, fwidth(bands) * 1.2, edge);
+  float edge = 0.5 - abs(fract(bands) - 0.5);
+  float w = fwidth(bands);
+  float core = 1.0 - smoothstep(0.0, w * 1.1, edge);
+  float halo = 1.0 - smoothstep(0.0, w * 7.0, edge);
 
-  // 6. Palette: the site's ink navy, lines in sky blue, brighter near the cursor.
-  vec3 ink = vec3(0.043, 0.078, 0.141);
-  vec3 sky = vec3(0.612, 0.761, 1.0);
-  float glow = exp(-d * 2.2);
-  vec3 col = ink + vec3(0.02, 0.04, 0.08) * h;
-  col += sky * line * (0.10 + 0.35 * glow);
+  // 6. Aurora palette: line colour shifts with height and drifts with time
+  //    (deep blue -> sky -> violet -> teal), so the landscape reads as layered depth.
+  vec3 ink    = vec3(0.035, 0.063, 0.125);
+  vec3 sky    = vec3(0.612, 0.761, 1.0);
+  vec3 violet = vec3(0.663, 0.545, 1.0);
+  vec3 teal   = vec3(0.373, 0.886, 0.851);
+  float k = fract(h * 1.6 + u_time * 0.02);
+  vec3 hue = mix(mix(sky, violet, smoothstep(0.0, 0.5, k)), teal, smoothstep(0.5, 1.0, k));
 
-  // 7. Readability scrim: darken the left/bottom where the headline sits.
-  col *= mix(0.55, 1.0, smoothstep(0.1, 0.9, uv.x * 0.7 + uv.y * 0.3));
+  // Background: two slow nebula glows (violet top-right, teal bottom-left) over the ink.
+  vec3 col = ink;
+  col += violet * 0.30 * exp(-2.2 * distance(uv, vec2(0.85 + 0.05 * sin(u_time * 0.1), 0.85)));
+  col += teal   * 0.16 * exp(-2.6 * distance(uv, vec2(0.1, 0.05)));
+  col += vec3(0.02, 0.035, 0.07) * h;
+
+  // Lines: brighter on higher ground and near the cursor ("depth" + focus).
+  float glow = exp(-d * 2.0);
+  float lift = 0.35 + 0.65 * smoothstep(0.2, 0.8, h);
+  col += hue * (core * 0.45 + halo * 0.14) * lift * (0.6 + 1.6 * glow);
+  col += sky * 0.16 * exp(-d * d * 14.0);               // soft spotlight under the cursor
+
+  // 7. Readability scrim + vignette: darken the left/bottom where the headline sits and the edges.
+  col *= mix(0.5, 1.0, smoothstep(0.1, 0.9, uv.x * 0.7 + uv.y * 0.3));
+  col *= 1.0 - 0.35 * pow(length(uv - 0.5) * 1.3, 2.0);
 
   // 8. Grain: per-frame noise breaks up gradient banding.
-  col += (hash(gl_FragCoord.xy + fract(u_time) * 100.0) - 0.5) * 0.03;
+  col += (hash(gl_FragCoord.xy + fract(u_time) * 100.0) - 0.5) * 0.025;
   gl_FragColor = vec4(col, 1.0);
 }`;
 
