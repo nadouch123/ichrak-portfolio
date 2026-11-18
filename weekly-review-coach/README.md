@@ -1,26 +1,91 @@
-# Weekly Review Coach: tool results in the UI
+# Weekly Review Coach
 
-A chat agent that reviews my internship week from my own notes. Every tool the model calls is rendered as a typed tool part with four designed states, and the results show up as real components, not JSON.
+**Live:** https://weekly-review-coach.vercel.app
 
-- **Tool definition file:** [`lib/tools.ts`](lib/tools.ts)
-- **Rendering of the states:** [`src/ToolParts.tsx`](src/ToolParts.tsx)
-- **Route:** [`api/chat.ts`](api/chat.ts) (`streamText` + `toUIMessageStreamResponse`)
-- Stack: Vite + React 19, AI SDK 7 (`ai`, `@ai-sdk/react`), Zod 4, Vercel functions.
+A chat agent that reviews my internship week from my own notes. Ask "How did my week go?" and it reads the week's notes file, checks what the assignment list says is due, compares that with what is actually live on my portfolio, and proposes next week's plan, which you approve or push back on before it is final. Every tool call is shown as a real component with its own loading, running, done and error state, not as JSON.
 
-## Run it
+| Review with tool cards | Error mid-answer, with retry | Phone |
+|---|---|---|
+| ![Review](docs/screenshots/review.png) | ![Error](docs/screenshots/error.png) | ![Mobile](docs/screenshots/mobile.png) |
+
+## Run it locally
+
+Needs Node 20+.
 
 ```bash
+git clone https://github.com/nadouch123/ichrak-portfolio
+cd ichrak-portfolio/weekly-review-coach
 npm install
-npm run dev:full                  # app + /api on http://localhost:5180
+npm run dev:full        # app + /api on http://localhost:5180
 ```
 
-The model is chosen in `api/chat.ts`:
+No key is needed: without one, the app runs a scripted demo model (marked with a "Demo model" badge) that makes the same tool calls Claude would, and the tools run for real. Add a key in `.env` to talk to Claude.
 
-| Env | Model |
-|---|---|
-| `ANTHROPIC_API_KEY` set | Claude (`COACH_MODEL`, default `claude-opus-5-5`) |
-| `COACH_USE_GATEWAY=1` | Claude through the Vercel AI Gateway |
-| neither | **Demo model**: a scripted `MockLanguageModelV4` that streams the same tool calls a real model would. The tools still run for real. The UI shows a "Demo model" badge so nobody mistakes it for Claude. |
+```bash
+npm test                # Vitest unit + component tests (no model is ever called)
+npm run test:e2e        # Playwright, mocks the AI route
+npm run build           # production build into dist/
+```
+
+## Environment variables
+
+| Name | Required | Default | What it does |
+|---|---|---|---|
+| `ANTHROPIC_API_KEY` | No | none | Turns on the real model. Without it (and without the gateway flag) the demo model answers. |
+| `COACH_MODEL` | No | `claude-opus-5-5` | Model id sent to Anthropic (or `anthropic/claude-opus-5.5` with the gateway). |
+| `COACH_USE_GATEWAY` | No | off | Set to `1` to go through the Vercel AI Gateway instead of a direct key. |
+| `COACH_RATE_LIMIT` | No | `20` | Requests per IP per 10 minutes before `/api/chat` answers 429. |
+
+On Vercel, set these under Project → Settings → Environment Variables for **Production** and redeploy.
+
+## Architecture
+
+```
+Browser (React 19, @ai-sdk/react useChat)
+   │  POST /api/chat  { messages, files, week }
+   ▼
+api/chat.ts  (Vercel function, maxDuration 60 s)
+   ├─ guards: JSON parse, empty input, 2,000-char message cap,
+   │          40-message cap, 20 files x 60 KB, per-IP rate limit
+   ├─ pickModel(): Claude │ AI Gateway │ scripted demo model
+   └─ streamText(tools, stopWhen 10 steps) ──► UI message stream (SSE)
+          tools (lib/tools.ts, Zod schemas):
+            listFiles / readFile ── week notes (attached or public/data)
+            checkPortfolio ── fetches the live portfolio pages
+            showWeeklyReview ── renders the review card
+            proposePlan ── no execute: the user's Approve answers it
+   ▼
+src/ToolParts.tsx renders each tool part by state;
+src/failures.tsx turns every error into a designed message with a next step.
+```
+
+## Production hygiene
+
+- **Input caps:** one message is at most 2,000 characters, a conversation at most 40 messages, attachments at most 20 files of 60 KB. Bigger requests get a 413 with a plain message.
+- **Rate limit:** 20 requests per IP per 10 minutes (`lib/rate-limit.ts`), answered with 429 and `retryAfter`. It is in memory, so it is per warm function instance: it stops a stranger looping the endpoint, not a determined attacker. A shared store (Upstash/KV) would be the next step if the key gets real traffic.
+- **Cost ceiling:** `maxDuration = 60` (in the route and `vercel.json`), at most 10 model steps per answer, and the client's Stop aborts the model call through `req.signal`.
+- **No key in the browser:** the key only lives in the function's environment.
+
+## Decisions
+
+- **Demo model as the default.** Reviewers can try the whole flow without me paying per visit, and the tests never touch a real model. The badge makes it impossible to mistake for Claude.
+- **Human approval on the plan.** `proposePlan` has no `execute`; the UI's Approve button supplies the result, so the agent can never "decide" next week on its own.
+- **Errors are content, not crashes.** Every failure (network, rate limit, cut-off stream, bad tool input, refusal) leaves the route as a JSON problem the UI can explain. The sabotage switches in the UI exist so each can be shown on demand.
+- **Vite + Vercel functions, not Next.js.** The app is one page and one route; a framework would add more than it gives.
+
+## How AI tools built this
+
+I directed the work; Claude (Claude Code, in a project with one thread per assignment) wrote most of the code. Specifically:
+
+- **Spec first (FL-06):** I wrote the agent design spec with Claude's help: the three tools, the approval step, what "good" looks like. The code follows that spec.
+- **Generated by Claude:** the route, tool definitions, the four tool-part states, the demo model, the failure layer (FE-08), the test suite (FE-09), the accessibility fixes (FE-10) and the rate limit in this pass.
+- **What I had to correct:** the first version printed tool results as raw JSON; I asked for real components per tool. The first error screens said "Something went wrong"; I asked for what failed, what it was trying to do and what to do now. The screen reader announced every streamed token (174 announcements in one answer) until the audit caught it; it is now 10.
+- **What AI could not check:** it cannot open github.com or vercel.app from its sandbox, so CI screenshots and the final cross-browser pass (Safari, Firefox, iPhone) were done by me.
+- **Honest gap:** the evals in the spec have only been run against the demo model, not Claude, because the deployed app has no API key yet.
+
+---
+
+# Deep dive: tool states and failure handling
 
 ## The state machine
 
