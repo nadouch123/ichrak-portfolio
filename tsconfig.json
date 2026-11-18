@@ -17,5 +17,5 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["playground/**/*.ts", "playground/**/*.tsx", "agent-spec/**/*.ts", "agent-spec/**/*.tsx"]
+  "include": ["3d/**/*.ts", "3d/**/*.tsx", "playground/**/*.ts", "playground/**/*.tsx", "agent-spec/**/*.ts", "agent-spec/**/*.tsx"]
 }

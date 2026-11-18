@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FlaskConical, FileText, CalendarDays, PenLine, Flag } from 'lucide-react';
+import { ArrowUpRight, ArrowDown, Menu, X, Github, Linkedin, Mail, MapPin, BrainCircuit, Code2, Layers, Cpu, Accessibility, Sparkles, ShieldAlert, FlaskConical, FileText, CalendarDays, PenLine, Flag, Box } from 'lucide-react';
 import { LINKS, bookingHref } from './links.js';
 import ContactForm from './ContactForm.jsx';
 import { FlyrankBadge } from './FlyrankBadge.jsx';
@@ -23,7 +23,8 @@ const posts = [
 ];
 
 const projects = [
-  { title: 'Testing pass', tag: 'Testing · CI', meta: 'FlyRank · FE-09', desc: 'Vitest and React Testing Library tests for my AI chat (pending, streaming and error states, every message part, tool results) and my contact form, a Playwright test of the main flow with the AI route mocked, and GitHub Actions on every push. Then the AI assistant fixed a failing test by running the suite itself.', tech: ['Vitest', 'Testing Library', 'Playwright', 'GitHub Actions'], href: '/testing/', cta: 'See the tests and the CI', icon: FlaskConical, featured: true },
+  { title: 'A mug you can glaze (3D)', tag: '3D · React Three Fiber', meta: 'FlyRank · FE-AA2', desc: 'My first 3D on the web: a ceramic mug I modelled in code, with a configurator for glaze, finish, handle and lighting, and a drop-in viewer for any .glb. It loads only when you reach it, waits for a tap on phones, and falls back to a still picture. 43 KB model, and none of its 3D code loads on this page.', tech: ['React Three Fiber', 'three.js', 'glTF + meshopt'], href: '/3d/', cta: 'Turn the mug', icon: Box, featured: true },
+  { title: 'Testing pass', tag: 'Testing · CI', meta: 'FlyRank · FE-09', desc: 'Vitest and React Testing Library tests for my AI chat (pending, streaming and error states, every message part, tool results) and my contact form, a Playwright test of the main flow with the AI route mocked, and GitHub Actions on every push. Then the AI assistant fixed a failing test by running the suite itself.', tech: ['Vitest', 'Testing Library', 'Playwright', 'GitHub Actions'], href: '/testing/', cta: 'See the tests and the CI', icon: FlaskConical },
   { title: 'Error states, empty states, edge cases', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-08', desc: 'I sabotaged my Weekly Review Coach ten ways (network, mid-stream cut, 429, malformed tool data, crashes) and gave every failure a designed state with a safe retry. Plus designed empty states, skeletons, a mobile Safari pass, and an automated test of the mid-stream failure.', tech: ['AI SDK', 'Error boundaries', 'Playwright'], href: '/edge-cases/', cta: 'See the sabotage checklist', icon: ShieldAlert },
   { title: 'Tool results in the UI', tag: 'AI SDK · Frontend', meta: 'FlyRank · FE-07', desc: 'My Weekly Review Coach rebuilt with the AI SDK: Zod-typed server tools, four designed states for every tool call, results rendered as real components (file preview, bar chart, review card), and a plan that waits for my approval. Includes the tool definition file and the README contract.', tech: ['AI SDK', 'Zod', 'React'], href: '/tool-ui/', cta: 'See the tools and the code', icon: Layers },
   { title: 'Weekly Review Coach (live agent)', tag: 'AI Agent · Build', meta: 'FlyRank · Checkpoint 1', desc: 'The working version of the agent from my spec: a Claude agent on Vercel that reads my notes through tools, checks my live portfolio, reviews my week and quizzes me. With the full build log: what broke, what changed, what I cut.', tech: ['Claude API', 'Tool use', 'Vercel'], href: '/agent-build/', cta: 'See the build and try it', icon: Cpu },
@@ -120,7 +121,7 @@ function App() {
                 <li><MapPin size={15} /> Sousse, Tunisia</li>
                 <li><span className="live" /> Open to opportunities</li>
               </ul>
-              <a className="now-link" href="/testing/">Latest: tests and CI my AI assistant can run <ArrowUpRight size={15} /></a>
+              <a className="now-link" href="/3d/">Latest: a 3D mug you can glaze yourself <ArrowUpRight size={15} /></a>
             </aside>
           </div>
           <div className="wrap focus-strip reveal">

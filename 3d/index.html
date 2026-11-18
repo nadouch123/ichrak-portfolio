@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FE-AA2 First 3D on the web: a ceramic mug you can glaze, swap parts on and inspect in 3D, plus a drag-and-drop GLB viewer. Lazy-loaded with a still fallback, by Ichrak Matrouh" />
+    <link rel="canonical" href="https://ichrak-matrouh.vercel.app/3d/" />
+    <meta name="author" content="Ichrak Matrouh" />
+    <meta property="og:site_name" content="Ichrak Matrouh" />
+    <meta property="og:type" content="article" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://ichrak-matrouh.vercel.app/3d/" />
+    <meta property="og:title" content="FE-AA2 First 3D experience | Ichrak Matrouh" />
+    <meta property="og:description" content="FE-AA2 First 3D on the web: a ceramic mug you can glaze, swap parts on and inspect in 3D, plus a drag-and-drop GLB viewer. Lazy-loaded with a still fallback, by Ichrak Matrouh" />
+    <meta property="og:image" content="https://ichrak-matrouh.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ichrak Matrouh: I build AI interfaces people can trust. Frontend AI engineering intern at FlyRank." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FE-AA2 First 3D experience | Ichrak Matrouh" />
+    <meta name="twitter:description" content="FE-AA2 First 3D on the web: a ceramic mug you can glaze, swap parts on and inspect in 3D, plus a drag-and-drop GLB viewer. Lazy-loaded with a still fallback, by Ichrak Matrouh" />
+    <meta name="twitter:image" content="https://ichrak-matrouh.vercel.app/og-image.png" />
+    <meta name="theme-color" content="#0b1424" />
+    <link rel="icon" href="/logo-mark.jpg" type="image/jpeg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/3d/mug-poster.webp" type="image/webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts load without blocking the first paint (Week 9 speed fix); the fallback fonts show until they arrive. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+    <title>FE-AA2 First 3D experience | Ichrak Matrouh</title>
+    <!-- Vercel Web Analytics: cookieless page views, no personal data. -->
+    <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </head>
+  <body>
+    <div id="three-root"></div>
+    <script type="module" src="/3d/main.tsx"></script>
+  </body>
+</html>
