@@ -7,7 +7,7 @@ import type { Mode } from './gate';
 // The only import of the 3D code. Nothing from three.js is downloaded until this runs.
 const Viewer = lazy(() => import('./Viewer'));
 
-export const POSTER = '/3d/mug-poster.webp';
+export const POSTER = '/3d/network-poster.webp';
 
 class CatchWebGL extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -18,7 +18,7 @@ class CatchWebGL extends Component<{ fallback: ReactNode; children: ReactNode },
 function Poster({ children }: { children?: ReactNode }) {
   return (
     <figure className="poster">
-      <img src={POSTER} width={1230} height={992} alt="A glossy blue ceramic mug with a loop handle, standing on a matching saucer, lit like a studio product photo." />
+      <img src={POSTER} width={1230} height={992} alt="A glowing 3D neural network on a dark blue background: columns of nodes for data, skills, AI and data capabilities, and projects, joined by curved lines of light." />
       {children}
     </figure>
   );
@@ -48,7 +48,7 @@ export default function Stage({ initial }: { initial?: Mode }) {
 
   const still = (
     <div className="viewer">
-      <div className="stage stage--studio"><Poster /></div>
+      <div className="stage stage--net"><Poster /></div>
       <div className="panel panel--still">
         {gate.mode === 'auto' ? (
           <p className="panel-wait" role="status"><Box size={18} /> Loading the 3D viewer…</p>
@@ -69,7 +69,7 @@ export default function Stage({ initial }: { initial?: Mode }) {
   return (
     <div ref={shell} className={'stage-shell' + (ready ? ' is-ready' : '')}>
       {want3d ? (
-        <CatchWebGL fallback={<div className="viewer"><div className="stage stage--studio"><Poster /></div><div className="panel panel--still"><p className="panel-reason" role="alert"><ImageOff size={18} /> The 3D viewer couldn’t start on this device (WebGL failed), so here is the still picture.</p></div></div>}>
+        <CatchWebGL fallback={<div className="viewer"><div className="stage stage--net"><Poster /></div><div className="panel panel--still"><p className="panel-reason" role="alert"><ImageOff size={18} /> The 3D viewer couldn’t start on this device (WebGL failed), so here is the still picture.</p></div></div>}>
           <Suspense fallback={still}>
             <Viewer reducedMotion={gate.mode === 'ask' && gate.reason === 'reduced-motion'} onReady={onReady}
               cover={ready ? null : <div className="poster-cover" aria-hidden="true"><img src={POSTER} alt="" /></div>} />

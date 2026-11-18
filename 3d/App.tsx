@@ -1,4 +1,5 @@
-import { ArrowLeft, ArrowUpRight, Box, Check, Gauge, ListChecks, Rocket, Layers } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Box, Check, Gauge, ListChecks, Rocket, Layers, Table2 } from 'lucide-react';
+import { LAYERS, NODES, THEMES } from './graph';
 import Stage from './Stage';
 import { PERF } from './perf';
 
@@ -10,30 +11,31 @@ const sections = [
   { id: 'brief', label: 'What was asked' },
   { id: 'loading', label: 'How it loads' },
   { id: 'perf', label: 'Load and frame rate' },
+  { id: 'table', label: 'The network as a table' },
   { id: 'next', label: 'With more time' },
 ];
 
 const brief: [string, string][] = [
-  ['A real 3D scene', 'React Three Fiber and drei on three.js. The mug is a real glTF model I built from code (lathe profiles and tube handles), lit with environment lighting and a soft contact shadow.'],
-  ['Interaction beyond orbiting', 'Change the glaze colour, finish and metallic lustre, swap the handle, take the saucer away, colour the inside, switch the lighting, toggle wireframe. Or drop your own .glb and edit its materials.'],
-  ['Model kept small', `The mug is ${PERF.modelKb} KB with meshopt compression (${PERF.modelRawKb} KB before), ${PERF.modelGzKb} KB over the wire. No textures: colour comes from materials.`],
+  ['A real 3D scene', 'React Three Fiber on three.js. 28 nodes, 61 curved edges and 1,600 data points, with custom GLSL shaders for the moving data, the glow and the point field. Everything is generated in code from one small data file.'],
+  ['Interaction beyond orbiting', 'Tap or hover any node to light up its whole lineage: what it is built from and what it feeds. Run a forward pass and watch a wave move through the layers. Fold the network into an embedding view where the same nodes regroup by theme.'],
+  ['Kept small', `No model file and no textures to download: the geometry is built in code, and labels are drawn into tiny canvas textures. The only asset is a ${PERF.posterKb} KB still picture for the fallback.`],
   ['Canvas lazy-loaded', 'The 3D code is its own chunk. On a laptop it downloads when the viewer is about to scroll into view and the browser is idle. On a phone it waits for a tap. Never on the home page.'],
-  ['Static fallback', 'Reduced motion, Data Saver, a low-power device, a phone, or no WebGL: you get a still picture of the mug first, and a button to load 3D (except without WebGL). If WebGL crashes, the picture comes back.'],
-  ['Usable on mobile', 'One finger turns, two fingers zoom. Pixel ratio capped at 1.75 and dropped to 1 if frames slow down. Nothing renders while you aren’t touching it or while it is off screen.'],
+  ['Static fallback', 'Reduced motion, Data Saver, a low-power device, a phone, or no WebGL: you get a still picture of the network first, and a button to load 3D (except without WebGL). The network is also written out as a table below, so nothing depends on the canvas.'],
+  ['Usable on mobile', 'One finger turns, two fingers zoom, a tap selects. The camera steps back on narrow screens so the whole network fits. Pixel ratio capped at 1.5 and dropped to 1 if frames slow down. Rendering stops when it is off screen.'],
 ];
 
 const steps: [string, string][] = [
-  ['The page loads without any 3D', 'The page, the configurator panel and a still picture of the mug come first. The picture is the same size as the canvas, so nothing jumps when 3D arrives.'],
+  ['The page loads without any 3D', 'The page, the panel and a still picture of the network come first. The picture is the same size as the canvas, so nothing jumps when 3D arrives.'],
   ['The gate decides', 'Before any 3D code is fetched, a tiny check (gate.ts, no three.js inside) reads prefers-reduced-motion, Data Saver, device memory, CPU cores, touch-only input and WebGL support.'],
-  ['The viewer loads when it is about to be seen', 'On a laptop, an IntersectionObserver waits until the stage is within 300 px of the screen and the browser is idle, then React.lazy fetches the 3D chunk and the 43 KB mug. On a phone, the tap does that.'],
-  ['It renders only when something changes', 'The canvas renders on demand: a frame when you drag, change a setting or while auto-rotate is on. Scrolled away, it stops completely. Lighting and the shadow are baked once, not every frame.'],
+  ['The viewer loads when it is about to be seen', 'On a laptop, an IntersectionObserver waits until the stage is within 300 px of the screen and the browser is idle, then React.lazy fetches the 3D chunk. On a phone, the tap does that.'],
+  ['The GPU does the animating', 'The moving data, the forward-pass wave and the drifting points are computed in shaders from one time value, so each frame the CPU only updates 28 nodes. Turn off the data flow and auto-rotate and it renders nothing at all until you touch it.'],
 ];
 
 const next: [string, string][] = [
-  ['Put it on my capstone', 'A small 3D “weekly review” object for the Weekly Review Coach: one block per day, height by hours, colour by mood.'],
-  ['Real ceramic textures', 'A speckled clay normal map and glaze pooling, compressed as KTX2, loaded only after the first frame.'],
-  ['Share a configuration', 'Put the chosen glaze, finish and handle in the URL so a link opens the same mug.'],
-  ['An AR button', 'On phones, “View on your table” with model-viewer and a USDZ export for iOS.'],
+  ['Real embeddings', 'Embed my project write-ups with a text-embedding model and place each node by its actual vector (reduced with UMAP), instead of by hand-picked themes.'],
+  ['Put it in my capstone', 'Show the Weekly Review Coach’s tool calls live in the network: each call lights the path from my notes to the review it produced.'],
+  ['Bloom, done cheaply', 'A real bloom pass on desktops with a good GPU, keeping the sprite glow for phones.'],
+  ['Share a view', 'Put the selected node and view in the URL so a link opens the same picture.'],
 ];
 
 export default function App() {
@@ -55,10 +57,10 @@ export default function App() {
           <div className="hero-glow" aria-hidden="true" />
           <div className="wrap">
             <p className="eyebrow light"><span className="dot" /> FlyRank · FE-AA2 · First 3D on the web</p>
-            <h1>A mug you can <em>glaze yourself.</em></h1>
-            <p className="hero-lead">A small product configurator in React Three Fiber: turn the mug, change the glaze and finish, swap the handle. Then drop in any .glb of your own. It loads only when you reach it, and phones that ask for less get a still picture.</p>
+            <h1>My work, <em>as a neural network.</em></h1>
+            <p className="hero-lead">Data flows in on the left, through my skills and the AI and data capabilities I’ve built, and out into my projects. Tap any project to light up what it’s made of, run a forward pass, or fold the whole network into an embedding space. Built with React Three Fiber and custom shaders.</p>
             <dl className="meta-row">
-              <div><dt>Mug model</dt><dd>{PERF.modelKb} KB</dd></div>
+              <div><dt>Nodes · edges · points</dt><dd>28 · 61 · 1,600</dd></div>
               <div><dt>3D code, gzipped</dt><dd>{PERF.chunkGzKb} KB</dd></div>
               <div><dt>3D code on the home page</dt><dd>0 KB</dd></div>
               <div><dt>Frames when idle</dt><dd>0 / s</dd></div>
@@ -66,7 +68,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="viewer" className="block viewer-block" aria-label="3D mug configurator">
+        <section id="viewer" className="block viewer-block" aria-label="3D network of my work">
           <div className="wrap">
             <Stage />
             <nav className="spec-toc spec-toc--light" aria-label="Page sections">
@@ -108,9 +110,28 @@ export default function App() {
           </div>
         </section>
 
-        <section id="next" className="block">
+        <section id="table" className="block">
           <div className="wrap">
-            <div className="section-head"><div><p className="eyebrow">04 — With more time</p><h2>What I’d <em>add next.</em></h2></div><span className="head-icon"><Rocket size={24} /></span></div>
+            <div className="section-head"><div><p className="eyebrow">04 — The network as a table</p><h2>The same graph, <em>in words.</em></h2></div><span className="head-icon"><Table2 size={24} /></span></div>
+            <div className="table-wrap" role="region" aria-label="Every node in the network" tabIndex={0}>
+              <table className="contract">
+                <thead><tr><th scope="col">Node</th><th scope="col">Layer</th><th scope="col">Built from</th><th scope="col">What it is</th></tr></thead>
+                <tbody>{NODES.map(n => (
+                  <tr key={n.id}>
+                    <td data-label="Node">{n.href ? <a href={n.href}>{n.label}</a> : n.label}</td>
+                    <td data-label="Layer">{LAYERS[n.layer]} · {THEMES[n.theme]}</td>
+                    <td data-label="Built from">{(n.from ?? []).map(id => NODES.find(m => m.id === id)!.label).join(', ') || '—'}</td>
+                    <td data-label="What it is">{n.desc}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="next" className="block tinted">
+          <div className="wrap">
+            <div className="section-head"><div><p className="eyebrow">05 — With more time</p><h2>What I’d <em>add next.</em></h2></div><span className="head-icon"><Rocket size={24} /></span></div>
             <div className="req-list">
               {next.map(([t, d]) => <article className="spec-card" key={t}><h3>{t}</h3><p>{d}</p></article>)}
             </div>
@@ -126,7 +147,7 @@ export default function App() {
           </div>
           <a className="btn btn-light" href={README} target="_blank" rel="noreferrer"><Box size={17} /> README on GitHub <ArrowUpRight size={17} /></a>
         </div>
-        <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FE-AA2 · First 3D experience</span></footer>
+        <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FE-AA2 · My work as a neural network</span></footer>
       </section>
     </div>
   );

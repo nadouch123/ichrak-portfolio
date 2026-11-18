@@ -46,11 +46,11 @@ export function readEnv(): Env {
 }
 
 export const reasonText: Record<Reason, string> = {
-  'reduced-motion': 'Your device asks for reduced motion, so this is a still picture of the mug. The 3D viewer only moves when you drag it, and auto-rotate starts off.',
-  'save-data': 'Data Saver is on, so this is a still picture. The 3D viewer is about 300 KB more (the mug model itself is 43 KB).',
+  'reduced-motion': 'Your device asks for reduced motion, so this is a still picture of the network. In the 3D viewer, the data flow and auto-rotate start off, and it only moves when you drag it.',
+  'save-data': 'Data Saver is on, so this is a still picture. The 3D viewer is about 230 KB more.',
   'low-power': 'This looks like a low-power device, so this is a still picture to save your battery.',
-  'touch': 'On phones the 3D viewer waits for a tap, so it doesn’t spend your data or battery before you want it. Then drag with one finger to turn the mug, pinch to zoom.',
-  'no-webgl': 'Your browser has WebGL turned off or doesn’t support it, so this is a still picture of the mug.',
+  'touch': 'On phones the 3D viewer waits for a tap, so it doesn’t spend your data or battery before you want it. Then drag with one finger to turn the network, pinch to zoom, tap a node.',
+  'no-webgl': 'Your browser has WebGL turned off or doesn’t support it, so this is a still picture of the network.',
 };
 
 export const buttonText: Record<Reason, string> = {
