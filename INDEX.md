@@ -6,6 +6,8 @@ Ichrak Matrouh · Live site: https://ichrak-matrouh.vercel.app · Capstone: [Wee
 - [Capstone README](capstone/README.md) · [Demo video](capstone/README.md) _(link at the top of the README)_ · [Live agent](https://weekly-review-coach.vercel.app) · [Source](weekly-review-coach/)
 - Retrospective: _add link_ · Build-in-public post: _add link_
 
+- [How to add the next case study + next piece](NEXT-CASE.md)
+
 ## Week by week
 | Week | Assignment | Deliverable |
 |---|---|---|
