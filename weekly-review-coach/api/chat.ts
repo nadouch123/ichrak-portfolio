@@ -5,7 +5,11 @@ import { demoModel } from '../lib/demo-model.js';
 import { SYSTEM } from '../lib/system.js';
 import { MAX_INPUT, SABOTAGES, problemResponse, sabotageMiddleware, toProblem, type Sabotage } from '../lib/failures.js';
 
-export const maxDuration = 300;
+import { clientIp, rateLimit } from '../lib/rate-limit.js';
+
+// A coaching answer with tool calls finishes well under a minute; 60 s caps a stuck stream's cost.
+export const maxDuration = 60;
+const MAX_MESSAGES = 40;
 
 export function pickModel(forceDemo: boolean): { model: LanguageModel; mode: 'live' | 'demo'; label: string } {
   if (!forceDemo && process.env.ANTHROPIC_API_KEY) {
@@ -45,6 +49,9 @@ export async function POST(req: Request) {
     if (sabotage === 'rate-limit') return problemResponse(429, { code: 'rate_limit', message: 'The model is getting too many requests right now.', retryAfter: 12 });
 
     const messages: CoachMessage[] = Array.isArray(body.messages) ? body.messages : [];
+    if (messages.length > MAX_MESSAGES) return problemResponse(413, { code: 'too_long', message: `This conversation has ${messages.length} messages. The limit is ${MAX_MESSAGES}; start a new chat.` });
+    const wait = sabotage ? 0 : rateLimit(clientIp(req));
+    if (wait) return problemResponse(429, { code: 'rate_limit', message: 'You have sent a lot of questions in a short time. Please wait a few minutes.', retryAfter: wait });
     if (!messages.length) return problemResponse(400, { code: 'empty_input', message: 'There is nothing to answer yet. Type a question or pick a starter.' });
     const text = lastUserText(messages);
     const lastIsUser = messages.at(-1)?.role === 'user';
