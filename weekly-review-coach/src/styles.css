@@ -1,12 +1,12 @@
 :root{
   --navy:#0b1424;--navy2:#13213a;--paper:#f7f6f2;--card:#fff;--ink:#14181f;--muted:#5d6675;--line:#e3e1da;
   --blue:#2457a6;--blue-soft:#e8eef8;--sky:#9cc2ff;--ok:#1f7a4d;--ok-soft:#e7f4ec;--warn:#9a6a12;--warn-soft:#fbf3e2;
-  --bad:#a2352b;--bad-soft:#fbecea;--serif:'Instrument Serif',Georgia,serif;--t:200ms;
+  --bad:#a2352b;--bad-soft:#fbecea;--serif:'Instrument Serif','Instrument Serif Fallback',Georgia,serif;--sans:Inter,'Inter Fallback',system-ui,sans-serif;--t:200ms;
 }
 *{box-sizing:border-box}
 html,body,#root{margin:0;height:100%}
 body{overscroll-behavior:none}
-body{background:var(--paper);color:var(--ink);font:15px/1.55 Inter,system-ui,sans-serif}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans)}
 button,select,textarea,input{font:inherit}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 .top{background:var(--navy);color:#fff;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -22,7 +22,7 @@ button,select,textarea,input{font:inherit}
 .banner{margin:0;padding:9px 20px;background:var(--warn-soft);color:#5d4510;font-size:13px;border-bottom:1px solid #eedcb4}
 .layout{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}
 .side{border-right:1px solid var(--line);padding:16px;overflow:auto;background:#fbfaf7}
-.side h2{font:600 12px Inter;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+.side h2{font:600 12px var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
 .kfile{display:flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
 .kfile__name{flex:1;text-align:left;border:0;background:none;padding:8px 10px;cursor:pointer;word-break:break-all;font-size:14px}
 .kfile__name:hover{color:var(--blue)}
@@ -131,7 +131,7 @@ button,select,textarea,input{font:inherit}
 .site figcaption b{color:var(--ink)}
 .site svg{width:100%;max-width:560px;height:auto;display:block}
 .site__path{font:12px ui-monospace,Menlo,monospace;fill:var(--ink)}
-.site__ms{font:12px Inter;fill:var(--muted)}
+.site__ms{font:12px var(--sans);fill:var(--muted)}
 .bar{transform-box:fill-box;transform-origin:left;animation:grow 420ms cubic-bezier(.2,.8,.2,1) both}
 .bar--ok{fill:#4f8a6d}.bar--down{fill:var(--bad)}
 @keyframes grow{from{transform:scaleX(0)}}
@@ -231,7 +231,7 @@ button,select,textarea,input{font:inherit}
   .layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}
   .side{border-right:0;border-bottom:1px solid var(--line);padding:0;overflow:visible}
   .side h2{display:none}
-  .side__toggle{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:#fbfaf7;padding:10px 14px;font:600 13px Inter;color:var(--ink);cursor:pointer}
+  .side__toggle{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:#fbfaf7;padding:10px 14px;font:600 13px var(--sans);color:var(--ink);cursor:pointer}
   .side__toggle span{background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:1px 9px}
   .side__toggle::after{content:'▾';margin-left:8px;color:var(--muted)}
   .side--open .side__toggle::after{content:'▴'}
@@ -242,3 +242,16 @@ button,select,textarea,input{font:inherit}
   .empty h2{font-size:30px}
   .jump{bottom:92px;right:14px}
 }
+
+/* FE-10 accessibility pass */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:#fff;color:var(--ink);padding:10px 14px;border-radius:10px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.skip:focus{top:10px}
+/* One visible ring everywhere (the browser default was a 1px dark line, near invisible on the navy header). */
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.top :focus-visible{outline-color:var(--sky)}
+.upload:focus-within{outline:3px solid var(--blue);outline-offset:2px}
+.scroll:focus-visible{outline-offset:-3px}
+.btn--stop kbd{margin-left:6px;padding:1px 5px;border:1px solid currentColor;border-radius:4px;font:600 10px/1.4 var(--sans);opacity:.8}
+.notices:empty{display:none}
+.banner--pending{background:var(--paper);border-bottom-color:transparent}

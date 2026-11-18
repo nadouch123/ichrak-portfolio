@@ -43,7 +43,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
+            <img src="/logo-mark-80.webp" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -58,7 +58,7 @@ export default function App() {
             <h1>Tests the AI can run, <em>and a red build it fixed.</em></h1>
             <p className="hero-lead">Component tests for my AI chat and contact form, one end-to-end test of the main flow, and CI on every push. Then I let the AI assistant fix a failing test by running the suite itself.</p>
             <div className="build-ctas">
-              <a className="btn btn-light" href={ACTIONS} target="_blank" rel="noreferrer">See the CI runs <ArrowUpRight size={17} /></a>
+              <a className="btn btn-light" href={ACTIONS} target="_blank" rel="noreferrer">See the CI runs <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
               <a className="ghost-link" href="#ai-fix">The AI fix</a>
               <a className="ghost-link" href="#code">Test code</a>
             </div>
@@ -106,11 +106,11 @@ export default function App() {
             <div className="section-head"><div><p className="eyebrow">03 — CI</p><h2>Green <em>on every push.</em></h2></div><span className="head-icon"><Workflow size={24} /></span></div>
             <div className="shot-grid">
               <figure className="shot">
-                <img src="/fe09/ci-green.png" alt="GitHub Actions run of the Tests workflow: all three jobs passed (Portfolio, Weekly Review Coach component and route tests, Weekly Review Coach Playwright)." loading="lazy" />
+                <img src="/fe09/ci-green.webp" width="1660" height="783" alt="GitHub Actions: the Tests workflow with all three jobs passed." loading="lazy" />
                 <figcaption>The Tests workflow on GitHub Actions: three jobs, all green.</figcaption>
               </figure>
             </div>
-            <p className="note">Three jobs: the portfolio (contact form tests, then the production build), the coach’s typecheck and Vitest suite, and the coach’s Playwright test in Chromium. With these three jobs required by a branch rule on main, a red run can’t be merged. <a href={ACTIONS} target="_blank" rel="noreferrer">All runs</a> · <a href={PR} target="_blank" rel="noreferrer">The pull request</a></p>
+            <p className="note">Three jobs: the portfolio (contact form tests, then the production build), the coach’s typecheck and Vitest suite, and the coach’s Playwright test in Chromium. With these three jobs required by a branch rule on main, a red run can’t be merged. <a href={ACTIONS} target="_blank" rel="noreferrer">All runs<span className="sr-only"> (opens in a new tab)</span></a> · <a href={PR} target="_blank" rel="noreferrer">The pull request<span className="sr-only"> (opens in a new tab)</span></a></p>
           </div>
         </section>
 
@@ -121,7 +121,7 @@ export default function App() {
               <li>
                 <h3>A change breaks a test</h3>
                 <p>I pushed a change on purpose to see the loop work: render user messages as markdown too, “so pasted notes keep their formatting”. It sounds harmless. CI went red on that push.</p>
-                <figure className="shot"><img src="/fe09/ci-red.png" alt="GitHub Actions run of the Tests workflow for the markdown change: the component and route tests job failed." loading="lazy" /><figcaption>CI on the breaking push: the component test job fails.</figcaption></figure>
+                <figure className="shot"><img src="/fe09/ci-red.webp" width="1312" height="850" alt="GitHub Actions run of the Tests workflow for the markdown change: the component and route tests job failed." loading="lazy" /><figcaption>CI on the breaking push: the component test job fails.</figcaption></figure>
               </li>
               <li>
                 <h3>The assistant runs the suite itself</h3>
@@ -184,13 +184,12 @@ $ npm test
               ['.github/workflows/tests.yml', 'CI', ciSrc],
             ].map(([path, label, src], i) => (
               <div className="code-card" key={path} style={i ? { marginTop: 24 } : undefined}>
-                <div className="code-head"><code>{path.split('/').pop()}</code><span>{label}</span><a href={`${REPO}/blob/main/${path}`} target="_blank" rel="noreferrer">View on GitHub</a></div>
+                <div className="code-head"><code>{path.split('/').pop()}</code><span>{label}</span><a href={`${REPO}/blob/main/${path}`} target="_blank" rel="noreferrer">View on GitHub<span className="sr-only"> (opens in a new tab)</span></a></div>
                 <pre tabIndex={0} aria-label={`${path} source`}>{src}</pre>
               </div>
             ))}
           </div>
         </section>
-      </main>
 
       <section className="contact spec-end">
         <div className="wrap end-grid">
@@ -198,10 +197,11 @@ $ npm test
             <p className="eyebrow light">See it run</p>
             <h2>Every push, <em>every suite.</em></h2>
           </div>
-          <a className="btn btn-light" href={ACTIONS} target="_blank" rel="noreferrer">Open the CI runs <ArrowUpRight size={17} /></a>
+          <a className="btn btn-light" href={ACTIONS} target="_blank" rel="noreferrer">Open the CI runs <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
         </div>
         <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FE-09 · Testing pass</span></footer>
       </section>
+      </main>
     </div>
   );
 }

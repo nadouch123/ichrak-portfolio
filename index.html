@@ -21,12 +21,19 @@
     <meta name="twitter:description" content="React interfaces for AI agents that show what the AI is doing, handle failure honestly, and stay usable for everyone. Live builds, tests and write-ups." />
     <meta name="twitter:image" content="https://ichrak-matrouh.vercel.app/og-image.png" />
     <meta name="theme-color" content="#0b1424" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Fonts load without blocking the first paint (Week 9 speed fix); the fallback fonts show until they arrive. -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+    <!-- FE-10: fonts are self-hosted (no third-party round trip) and preloaded. The "Fallback" faces are
+         Arial/Times resized to the real fonts' metrics, so text doesn't jump when the web fonts swap in. -->
+    <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/instrument-serif-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <style>
+      @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/inter-latin-var.woff2) format('woff2')}
+      @font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/instrument-serif-latin.woff2) format('woff2')}
+      @font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/instrument-serif-latin-italic.woff2) format('woff2')}
+      @font-face{font-family:'Inter Fallback';src:local('Arial'),local('ArialMT'),local('Liberation Sans');ascent-override:90.44%;descent-override:22.52%;line-gap-override:0%;size-adjust:107.12%}
+      @font-face{font-family:'Instrument Serif Fallback';src:local('Times New Roman'),local('TimesNewRomanPSMT'),local('Liberation Serif');ascent-override:117.94%;descent-override:36.93%;line-gap-override:0%;size-adjust:83.94%}
+    </style>
+    <!-- FE-10: the page is prerendered, so without JavaScript the full content is there; just skip the scroll fade-in. -->
+    <noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
     <title>Ichrak Matrouh | Frontend AI Engineering Intern Portfolio</title>
     <link rel="icon" href="/logo-mark.jpg" type="image/jpeg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -52,23 +59,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript>
-      <div class="nojs">
-        <h1>Ichrak Matrouh</h1>
-        <p>Frontend AI engineering intern at FlyRank and computer science engineering student in Sousse, Tunisia. I build React interfaces for AI agents that show what the AI is doing, handle failure honestly, and stay usable for everyone.</p>
-        <p>This page needs JavaScript for the full portfolio. Without it you can still read my work:</p>
-        <ul>
-          <li><a href="/testing/">Testing pass (FE-09)</a></li>
-          <li><a href="/edge-cases/">Error states, empty states and edge cases (FE-08)</a></li>
-          <li><a href="/tool-ui/">Tool results in the UI (FE-07)</a></li>
-          <li><a href="/agent-build/">Weekly Review Coach, the live agent</a></li>
-          <li><a href="/agent-spec/">Weekly Review Coach, the spec</a></li>
-          <li><a href="/cv/">My CV</a></li>
-          <li><a href="https://github.com/nadouch123">GitHub</a></li>
-        </ul>
-        <p>Email: <a href="mailto:matrouhichrak7@gmail.com">matrouhichrak7@gmail.com</a></p>
-      </div>
-    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import type { CoachMessage, KnowledgeFile } from '../lib/tools';
 import type { ToolPart } from './ToolParts';
-import { MessageView } from './MessageView';
+// FE-10 JS weight: messages (markdown parser, sanitizer, tool cards) load in their own chunk.
+// The empty chat doesn't need them; they are fetched while the browser is idle, before the first answer.
+const loadMessageView = () => import('./MessageView');
+const MessageView = lazy(() => loadMessageView().then((m) => ({ default: m.MessageView })));
 import { Bomb, ChatError, ErrorBoundary, toProblem, useOnline, useSlow } from './failures';
+import { Announcer, useDialogFocus, useStreamAnnouncer } from './a11y';
 
 const STARTER = ['week-05.md', 'assignments.md', 'review-template.md'];
 const MAX_INPUT = 2000;
@@ -52,6 +56,9 @@ export default function App() {
   const online = useOnline();
   const forceDemo = new URLSearchParams(location.search).has('demo');
   const composer = useRef<HTMLTextAreaElement>(null);
+  const stopBtn = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  const editArea = useRef<HTMLTextAreaElement>(null);
 
   // The transport reads the latest values through a ref, so the body is always current.
   // A sabotage switch is consumed by the request that uses it.
@@ -81,6 +88,7 @@ export default function App() {
   });
 
   useEffect(() => { if (!files) loadStarter(); }, []);
+  useEffect(() => { const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1)); idle(() => { loadMessageView(); }); }, []);
   useEffect(() => { if (files) store.set('wrc2_files', files); }, [files]);
   useEffect(() => { store.set('wrc2_week', week); }, [week]);
   useEffect(() => {
@@ -113,6 +121,33 @@ export default function App() {
   }
 
   const busy = status === 'submitted' || status === 'streaming';
+  const announcer = useStreamAnnouncer(messages, status);
+  useDialogFocus(editing >= 0, dialog, editArea, composer);
+
+  // FE-10 keyboard: the Send button turns into Stop while an answer streams, and Stop disappears when it ends.
+  // Either swap used to drop focus on <body>. Now focus follows: onto Stop when it appears, back to the
+  // message box when the answer ends, but only if focus was lost (never steal it from somewhere else).
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (busy && lost) stopBtn.current?.focus();
+    if (!busy && (lost || document.activeElement === stopBtn.current)) composer.current?.focus({ preventScroll: true });
+  }, [busy]);
+
+  function stopAnswer() {
+    stop();
+    setStopped(true);
+    announcer.say('Stopped. Anything that arrived is kept.', true);
+    composer.current?.focus({ preventScroll: true });
+  }
+  // Escape stops a streaming answer from anywhere on the page (unless a dialog is open; there Escape closes it).
+  useEffect(() => {
+    if (!busy) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !e.defaultPrevented && !document.querySelector('[role=dialog]')) { e.preventDefault(); stopAnswer(); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [busy]);
   const slow = useSlow(status === 'submitted', 5000);
   const tooLong = input.length > MAX_INPUT;
   const problem = toProblem(error);
@@ -164,6 +199,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <a className="skip" href="#composer-input">Skip to the message box</a>
       <header className="top">
         <div className="brand">
           <h1>Weekly Review <em>Coach</em></h1>
@@ -184,13 +220,17 @@ export default function App() {
         </div>
       </header>
 
+      <section className="notices" aria-label="Notices">
       {!online && <p className="banner banner--offline" role="status"><b>You’re offline.</b> Your notes and this chat are kept. Sending works again as soon as you reconnect.</p>}
+      {/* FE-10 layout shift: hold the banner's space while /api/status answers, so the chat doesn't jump down when the demo banner arrives. */}
+      {mode === null && !forceDemo && online && <p className="banner banner--pending" aria-hidden="true"><b>&nbsp;</b></p>}
       {isDemo && online && (
         <p className="banner">
           <b>Demo model.</b> <span className="long">No model credits on this deployment yet, so a scripted model chooses the tools. The tools are real: they read your files, fetch your live portfolio and check your sources.</span><span className="short">Scripted model, real tools.</span>
         </p>
       )}
       {sabotage && <p className="banner banner--sabotage" role="status">Sabotage armed: <b>{SABOTAGE.find((s) => s.value === sabotage)?.label.replace(/^\d+\. /, '')}</b>. It applies to your next message only.</p>}
+      </section>
 
       <main className="layout">
         <aside className={filesOpen ? 'side side--open' : 'side'}>
@@ -221,7 +261,8 @@ export default function App() {
               </div>
             ))}
             <label className="upload">+ Upload notes (.md / .txt)
-              <input type="file" accept=".md,.txt,.markdown,text/plain,text/markdown" multiple hidden onChange={async (e) => {
+              {/* FE-10: was `hidden`, which also removed it from the keyboard. Now visually hidden; the label shows its focus ring. */}
+              <input type="file" className="sr-only" accept=".md,.txt,.markdown,text/plain,text/markdown" multiple onChange={async (e) => {
                 const picked = [...(e.target.files ?? [])];
                 const added = (await Promise.all(picked.map(async (f) => ({ name: f.name, content: await f.text() })))).filter((f) => f.content.trim());
                 if (added.length < picked.length) alert('Empty files were skipped: the coach would have nothing to read in them.');
@@ -249,7 +290,7 @@ export default function App() {
         )}>
           <section className="chat">
             {crash && <Bomb />}
-            <div className="scroll" ref={scroller} onScroll={onScroll} role="log" aria-label="Conversation">
+            <div className="scroll" ref={scroller} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="off" aria-busy={busy} tabIndex={0}>
               {!messages.length && (
                 <div className="empty">
                   {noFiles ? (
@@ -280,6 +321,7 @@ export default function App() {
                 </div>
               )}
 
+              <Suspense fallback={null}>
               {messages.map((m, mi) => (
                 <MessageView
                   key={m.id}
@@ -291,15 +333,16 @@ export default function App() {
                   onRetryTool={() => ask('That step failed. Please try it again.')}
                 />
               ))}
+              </Suspense>
 
               {status === 'submitted' && (
-                <div className="pending" aria-live="polite">
+                <div className="pending">
                   <p className="thinking">Coach is choosing what to do<span className="dots" /></p>
                   <div className="bubble bubble--skeleton" aria-hidden="true"><span className="sk" /><span className="sk sk--short" /></div>
                   {slow && (
                     <div className="slow" role="status">
                       <span>This is taking longer than usual. Models can be slow when they are busy.</span>
-                      <button className="btn btn--ghost" onClick={() => { stop(); setStopped(true); }}>Stop</button>
+                      <button className="btn btn--ghost" onClick={stopAnswer}>Stop</button>
                     </div>
                   )}
                 </div>
@@ -331,6 +374,7 @@ export default function App() {
               <div className="composer__field">
                 <textarea
                   ref={composer}
+                  id="composer-input"
                   value={input}
                   rows={1}
                   aria-label="Message the coach"
@@ -345,18 +389,19 @@ export default function App() {
                 </p>
               </div>
               {busy
-                ? <button type="button" className="btn btn--stop" onClick={() => { stop(); setStopped(true); }} aria-label="Stop the answer">■ Stop</button>
-                : <button className="btn" disabled={!online || tooLong || !input.trim()}>Send</button>}
+                ? <button key="stop" type="button" ref={stopBtn} className="btn btn--stop" onClick={stopAnswer} aria-label="Stop the answer" aria-keyshortcuts="Escape"><span aria-hidden="true">■</span> Stop <kbd aria-hidden="true">Esc</kbd></button>
+                : <button key="send" className="btn" disabled={!online || tooLong || !input.trim()}>Send</button>}
             </form>
           </section>
         </ErrorBoundary>
       </main>
+      <Announcer text={announcer.text} />
 
       {editing >= 0 && files?.[editing] && (
-        <div className="modal" role="dialog" aria-modal="true" aria-label={files[editing].name} onKeyDown={(e) => e.key === 'Escape' && setEditing(-1)}>
+        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="edit-title" ref={dialog} onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); setEditing(-1); } }}>
           <div className="modal__card">
-            <header><b>{files[editing].name}</b><button aria-label="Close" onClick={() => setEditing(-1)}>×</button></header>
-            <textarea defaultValue={files[editing].content} id="edit-area" spellCheck={false} autoFocus />
+            <header><b id="edit-title">{files[editing].name}</b><button aria-label="Close" onClick={() => setEditing(-1)}>×</button></header>
+            <textarea defaultValue={files[editing].content} id="edit-area" ref={editArea} aria-label={`Contents of ${files[editing].name}`} spellCheck={false} />
             <footer>
               <button className="btn btn--ghost" onClick={() => setEditing(-1)}>Cancel</button>
               <button className="btn" onClick={() => { const v = (document.getElementById('edit-area') as HTMLTextAreaElement).value; setFiles((fs) => (fs ?? []).map((f, j) => (j === editing ? { ...f, content: v } : f))); setEditing(-1); }}>Save</button>

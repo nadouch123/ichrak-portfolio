@@ -21,11 +21,10 @@ export function AccessibleDisclosure({ title, children }: AccessibleDisclosurePr
         <span>{title}</span>
         <span aria-hidden="true" className={expanded ? 'play-chevron is-open' : 'play-chevron'}>›</span>
       </button>
-      {expanded && (
-        <div id={id} className="play-disclosure-panel">
-          {children}
-        </div>
-      )}
+      {/* FE-10: the panel is always in the DOM (hidden when closed), so aria-controls never points at a missing id. */}
+      <div id={id} className="play-disclosure-panel" hidden={!expanded}>
+        {children}
+      </div>
     </div>
   );
 }

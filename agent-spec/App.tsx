@@ -65,7 +65,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
+            <img src="/logo-mark-80.webp" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -219,7 +219,6 @@ export default function App() {
             </div>
           </div>
         </section>
-      </main>
 
       <section className="contact spec-end">
         <div className="wrap end-grid">
@@ -231,6 +230,7 @@ export default function App() {
         </div>
         <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FL-06 · Design Your Personal Agent</span></footer>
       </section>
+      </main>
     </div>
   );
 }

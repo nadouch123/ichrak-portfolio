@@ -45,7 +45,7 @@ describe('ContactForm', () => {
     await fillIn(user);
     await user.click(screen.getByRole('button', { name: 'Send message' }));
 
-    expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sending…' })).toHaveAttribute('aria-disabled', 'true'); // FE-10: stays focusable
     expect(screen.getByLabelText('Name')).toBeDisabled();
     expect(screen.getByLabelText('Message')).toBeDisabled();
     finish();

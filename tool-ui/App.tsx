@@ -43,7 +43,7 @@ export default function App() {
       <header className="nav scrolled">
         <div className="nav-inner">
           <a className="brand" href="/" aria-label="Ichrak Matrouh, portfolio home">
-            <img src="/logo-mark.jpg" alt="" width="40" height="40" />
+            <img src="/logo-mark-80.webp" alt="" width="40" height="40" />
             <span>Ichrak Matrouh</span>
           </a>
           <a className="back-link" href="/#work"><ArrowLeft size={16} /> Back to portfolio</a>
@@ -58,7 +58,7 @@ export default function App() {
             <h1>Tool calls you <em>can see.</em></h1>
             <p className="hero-lead">My Weekly Review Coach, rebuilt so every tool call is a typed part with four designed states, and every result is a real component instead of JSON.</p>
             <div className="build-ctas">
-              <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /></a>
+              <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
               <a className="ghost-link" href="#tools-file">Tool definition file</a>
               <a className="ghost-link" href="#readme">README</a>
             </div>
@@ -119,7 +119,7 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">04 — Tool definition file</p><h2><em>lib/tools.ts</em></h2></div><span className="head-icon"><FileCode2 size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>lib/tools.ts</code><span>Zod schemas + execute functions</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/tools.ts.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
+              <div className="code-head"><code>lib/tools.ts</code><span>Zod schemas + execute functions</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/tools.ts.txt" target="_blank" rel="noreferrer">View on GitHub<span className="sr-only"> (opens in a new tab)</span></a></div>
               <pre tabIndex={0} aria-label="lib/tools.ts source">{toolsSrc}</pre>
             </div>
           </div>
@@ -129,12 +129,11 @@ export default function App() {
           <div className="wrap">
             <div className="section-head"><div><p className="eyebrow">05 — README</p><h2>State machine and <em>tool contract.</em></h2></div><span className="head-icon"><BookOpen size={24} /></span></div>
             <div className="code-card">
-              <div className="code-head"><code>README.md</code><span>From the app repository</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/README.md.txt" target="_blank" rel="noreferrer">View on GitHub</a></div>
+              <div className="code-head"><code>README.md</code><span>From the app repository</span><a href="https://github.com/nadouch123/ichrak-portfolio/blob/main/tool-ui/source/README.md.txt" target="_blank" rel="noreferrer">View on GitHub<span className="sr-only"> (opens in a new tab)</span></a></div>
               <pre tabIndex={0} aria-label="README.md">{readmeSrc}</pre>
             </div>
           </div>
         </section>
-      </main>
 
       <section className="contact spec-end">
         <div className="wrap end-grid">
@@ -142,10 +141,11 @@ export default function App() {
             <p className="eyebrow light">Try it</p>
             <h2>Watch the tools <em>run.</em></h2>
           </div>
-          <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /></a>
+          <a className="btn btn-light" href={APP_URL} target="_blank" rel="noreferrer">Open the live app <ArrowUpRight size={17} /><span className="sr-only"> (opens in a new tab)</span></a>
         </div>
         <footer className="wrap footer"><span>© 2026 Ichrak Matrouh</span><span>FE-07 · Tool results in the UI</span></footer>
       </section>
+      </main>
     </div>
   );
 }

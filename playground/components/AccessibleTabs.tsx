@@ -13,7 +13,6 @@ interface AccessibleTabsProps {
 export function AccessibleTabs({ items }: AccessibleTabsProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const listId = useId();
-  const active = items[activeIndex];
 
   const move = (nextIndex: number) => {
     const index = (nextIndex + items.length) % items.length;
@@ -49,15 +48,20 @@ export function AccessibleTabs({ items }: AccessibleTabsProps) {
           );
         })}
       </div>
-      <div
-        id={`${listId}-panel-${active.id}`}
-        role="tabpanel"
-        aria-labelledby={`${listId}-tab-${active.id}`}
-        tabIndex={0}
-        className="play-tabpanel"
-      >
-        {active.content}
-      </div>
+      {/* FE-10: every panel is rendered and the inactive ones are hidden, so each tab's aria-controls resolves. */}
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          id={`${listId}-panel-${item.id}`}
+          role="tabpanel"
+          aria-labelledby={`${listId}-tab-${item.id}`}
+          tabIndex={0}
+          hidden={index !== activeIndex}
+          className="play-tabpanel"
+        >
+          {item.content}
+        </div>
+      ))}
     </div>
   );
 }

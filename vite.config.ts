@@ -16,6 +16,7 @@ export default defineConfig({
         testing: resolve(__dirname, 'testing/index.html'),
         threeD: resolve(__dirname, '3d/index.html'),
         cv: resolve(__dirname, 'cv/index.html'),
+        audit: resolve(__dirname, 'audit/index.html'),
       },
     },
   },
